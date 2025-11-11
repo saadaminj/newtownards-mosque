@@ -13,10 +13,10 @@ export default function MosqueAdminDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [prayerData, setPrayerData] = useState([]);
+  const [jamaatData, setJamaatData] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [searchDate, setSearchDate] = useState('');
-  // const [view, setView] = useState('table');
-  // const [processingImage, setProcessingImage] = useState(false);
+  const [jamaatName, setJamaatName] = useState('');
   const [editForm, setEditForm] = useState({
     date: '',
     fajr: '',
@@ -26,30 +26,25 @@ export default function MosqueAdminDashboard() {
     maghrib: '',
     isha: ''
   });
+  
+  const [editingIndexJamaat, setEditingIndexJamaat] = useState(null);
+  const [editFormJamaat, setEditFormJamaat] = useState({
+    name: '',
+    time:''
+  });
 
   useEffect(() => {
-    async function fetchPassword() {
-      try {
-        const res = await fetch("http://localhost:4000/api/password");
-        
-        console.log(res);
-        const data = await res.json();
-        setServerHash(data[0].passtext);
-        // if (Array.isArray(data) && data.length > 0) {
-        //   setServerHash(data[0].hash);
-        // }
-      } catch (err) {
-        console.error("Failed to fetch password:", err);
-      }
-    }
+    // call it here
     fetchPassword();
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  }, []); 
 
   const loadData = async () => {
+    loadDataPrayerTimes();
+    loadDataJamaat();
+    // loadDataEvent();
+  }
+
+  const loadDataPrayerTimes = async () => {
     try {
       const res = await fetch("http://localhost:4000/api/prayer_times");
       if (!res.ok) throw new Error("Network response was not ok");
@@ -73,15 +68,48 @@ export default function MosqueAdminDashboard() {
     }
   };
 
+  const loadDataJamaat = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/jamaat");
+      if (!res.ok) throw new Error("Network response was not ok");
+      const data = await res.json();
+
+      const byName = data.reduce((acc, row) => {
+        acc[row.name] = {
+          time: row.time,
+        };
+        return acc;
+      }, {});
+
+      setJamaatData(byName);
+    } catch (error) {
+      console.error("Failed to fetch jamaat times:", error);
+    }
+  };
+
+  
+  async function fetchPassword() {
+      try {
+        const res = await fetch("http://localhost:4000/api/password");
+        if (!res.ok) throw new Error("Network response was not ok");
+        const data = await res.json();
+        setServerHash(data.passtext);    
+        // if (Array.isArray(data) && data.length > 0) {
+        //   setServerHash(data[0].hash);
+        // }
+      } catch (err) {
+        console.error("Failed to fetch password:", err);
+      }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log(passwordInput);
-    console.log(serverHash);
 
     const isMatch = await bcrypt.compare(passwordInput, serverHash);
     
     if (isMatch) {
       setIsAuthenticated(true);
+      loadData();
       setPasswordError('');
       setPasswordInput('');
     } else {
@@ -104,6 +132,24 @@ export default function MosqueAdminDashboard() {
     } catch (error) {
       alert('Failed to save data');
       console.error("Error saving prayer times:", error);
+    }
+  };
+
+  const saveDataJamaat = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/jamaat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ jamaatData }),
+      });
+
+      await res.json();
+      alert('Jamaat times saved successfully! Other pages can now access this data.');
+    } catch (error) {
+      alert('Failed to save data');
+      console.error("Error saving Jamaat times:", error);
     }
   };
 
@@ -471,7 +517,16 @@ export default function MosqueAdminDashboard() {
         if (!response.ok) {
           // handle error (400, 404, 500, etc.)
           console.error("Error:", data.error);
-          alert(`Error (${response.status}): ${data.error}`);
+          if(data.error.includes("no record found")){
+            setPrayerData(prev => {
+              const updated = { ...prev };
+              delete updated[index]; // your key here
+              return updated;
+            });
+          }
+          else{
+            alert(`Error (${response.status}): ${data.error}`);
+          }
           return;
         }
         else{
@@ -494,6 +549,121 @@ export default function MosqueAdminDashboard() {
     const entry = { ...prayerData[index] };
     setEditingIndex(-1);
     setEditForm(entry);
+  };
+
+
+
+
+
+
+
+
+
+  const addNewEntryJamaat = () => {
+    setEditingIndexJamaat(-1);
+    setEditFormJamaat({
+      name: '',
+      time: ''
+    });
+  };
+
+  const editEntryJamaat = (index) => {
+    setEditingIndexJamaat(index);
+    setEditFormJamaat({name:index,...jamaatData[index]});
+  };
+
+  const saveEntryJamaat = () => {
+    if (!editFormJamaat || !editFormJamaat.name || editFormJamaat.name.trim().length === 0) {
+      alert("Name is required");
+      return;
+    }
+
+    let newJamaat = {...jamaatData};
+
+    newJamaat[editFormJamaat.name] = {
+      time: editFormJamaat.time,
+    };
+
+
+
+    // sort entries, then rebuild object
+    newJamaat = Object.entries(newJamaat)
+      .sort(([timeA], [timeB]) => toMinutes(timeA) - toMinutes(timeB))
+      .reduce((acc, [time, value]) => {
+        acc[time] = value;
+        return acc;
+      }, {});
+
+    setJamaatData(newJamaat);
+    setEditingIndexJamaat(null);
+  };
+
+      // helper to turn "03:45 pm" into minutes since midnight
+  function toMinutes(t) {
+    if (!t) return Number.POSITIVE_INFINITY; // push empties to end
+
+    // "03:45 pm" → ["03:45", "pm"]
+    const [timePart, ampm] = t.toLowerCase().split(" ");
+    const [hStr, mStr] = timePart.split(":");
+    let hour = parseInt(hStr, 10);
+    const minute = parseInt(mStr, 10);
+
+    if (ampm === "am") {
+      if (hour === 12) hour = 0; // 12:xx am → 00:xx
+    } else if (ampm === "pm") {
+      if (hour !== 12) hour += 12; // 1..11 pm → 13..23
+    }
+
+    return hour * 60 + minute;
+  }
+
+  const deleteEntryJamaat = async (index) =>  {
+    if (confirm('Delete this entry?')) {
+      // const newTimes = prayerData.filter((_, i) => i !== index);
+      // setPrayerData({ ...prayerData,  newTimes });
+      
+      try{
+        const response = await fetch(`http://localhost:4000/api/jamaat/${index}`, {
+          method: "DELETE",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // handle error (400, 404, 500, etc.)
+          console.error("Error:", data.error);
+          if((data.error).includes("nothing to delete")){
+            setJamaatData(prev => {
+              const updated = { ...prev };
+              delete updated[index]; // your key here
+              return updated;
+            });
+          }
+          else{
+            alert(`Error (${response.status}): ${data.error}`);
+          }
+          return;
+      
+        }
+        else{
+          setJamaatData(prev => {
+            const updated = { ...prev };
+            delete updated[index]; // your key here
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error("Network or JSON error:", err);
+        alert("Failed to connect to server.");
+      }
+    }
+    
+    
+  };
+
+  const duplicateEntryJamaat = (index) => {
+    setEditingIndexJamaat(-1);
+    setEditFormJamaat({name:index,...jamaatData[index]});
   };
 
   // const generateYearTemplate = () => {
@@ -529,6 +699,14 @@ export default function MosqueAdminDashboard() {
     )
     .map(([key, value]) => ({ date: key, ...value }));
 
+
+  let filteredTimesJamaat = jamaatData ? Object.entries(jamaatData) : [];
+
+  filteredTimesJamaat = filteredTimesJamaat
+    .filter(([key]) =>
+      !jamaatName ? true : key.toLowerCase().includes(jamaatName.toLowerCase())
+    )
+    .map(([key, value]) => ({ name: key, ...value }));
 
   // LOGIN SCREEN
   if (!isAuthenticated) {
@@ -577,7 +755,7 @@ export default function MosqueAdminDashboard() {
       <nav className=" max-w-7xl mx-auto bg-white shadow-md sticky top-0 z-10 mb-4 rounded-2xl">
         <div className="container mx-auto px-4">
           <div className="flex justify-center space-x-2 py-4 flex-wrap">
-            {[ 'prayers', 'events'].map(tab => (
+            {[ 'prayers','jamaat', 'events'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -834,6 +1012,176 @@ export default function MosqueAdminDashboard() {
           </div>
         </div>
       </div>)}
+      {activeTab === 'jamaat' && (
+        <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-8 h-8 text-emerald-600" />
+              <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
+            </div>
+            <button
+              onClick={saveDataJamaat}
+              className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Save All Changes
+            </button>
+          </div>
+
+          
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            {/* {processingImage && (
+              <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                <p className="text-blue-800 font-medium">Processing image and extracting prayer times...</p>
+              </div>
+            )} */}
+            <button
+              onClick={addNewEntryJamaat}
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Entry
+            </button>
+          </div>
+        </div>
+
+        {/* Edit Form Modal */}
+        {editingIndexJamaat !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingIndexJamaat === -1 ? 'Add New Entry' : 'Edit Entry'}
+                </h2>
+                <button
+                  onClick={() => setEditingIndexJamaat(null)}
+                  className="text-gray-500 hover:text-gray-700">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Jamaat Name *</label>
+                  <input
+                    type="text"
+                    value={editFormJamaat.name}
+                    onChange={(e) => setEditFormJamaat({ ...editFormJamaat, name: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                  <div key="Time">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                      Time
+                    </label>
+                    <input
+                      type="time"
+                      value={editFormJamaat.time}
+                      onChange={(e) => setEditFormJamaat({ ...editFormJamaat, time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={saveEntryJamaat}
+                  className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
+                >
+                  Save Entry
+                </button>
+                <button
+                  onClick={() => setEditingIndexJamaat(null)}
+                  className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Prayer Times Table */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Jamaat Times</h2>
+            <div className="flex items-center gap-3">
+              <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
+              <input
+                type="text"
+                placeholder="Search name"
+                value={jamaatName}
+                onChange={(e) => setJamaatName(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Prayer Name</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Time</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTimesJamaat.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                      No entries yet. Click "Add Entry" to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTimesJamaat.map((jamaat) => {
+                    const jamaatName = jamaat.name; 
+                    return (
+                      <tr key={jamaatName} className="border-t border-gray-200 hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-800">{jamaat.name}</td>
+                        <td className="px-4 py-3 text-gray-600">{jamaat.time || '-'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => editEntryJamaat(jamaatName)}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => duplicateEntryJamaat(jamaatName)}
+                              className="text-green-600 hover:text-green-800"
+                              title="Duplicate"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => deleteEntryJamaat(jamaatName)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      )}
     </div>
     
   );
