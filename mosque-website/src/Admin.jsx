@@ -14,9 +14,11 @@ export default function MosqueAdminDashboard() {
   const [passwordError, setPasswordError] = useState("");
   const [prayerData, setPrayerData] = useState([]);
   const [jamaatData, setJamaatData] = useState([]);
+  const [eventsData, setEventsData] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [searchDate, setSearchDate] = useState('');
   const [jamaatName, setJamaatName] = useState('');
+  const [searchEvents, setSearchEvents] = useState('');
   const [editForm, setEditForm] = useState({
     date: '',
     fajr: '',
@@ -33,6 +35,13 @@ export default function MosqueAdminDashboard() {
     time:''
   });
 
+  const [editingIndexEvents, setEditingIndexEvents] = useState(null);
+  const [editFormEvents, setEditFormEvents] = useState({
+    name: '',
+    time:''
+  });
+
+
   useEffect(() => {
     // call it here
     fetchPassword();
@@ -41,7 +50,7 @@ export default function MosqueAdminDashboard() {
   const loadData = async () => {
     loadDataPrayerTimes();
     loadDataJamaat();
-    // loadDataEvent();
+    loadDataEvents();
   }
 
   const loadDataPrayerTimes = async () => {
@@ -84,6 +93,26 @@ export default function MosqueAdminDashboard() {
       setJamaatData(byName);
     } catch (error) {
       console.error("Failed to fetch jamaat times:", error);
+    }
+  };
+
+  const loadDataEvents = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/events");
+      if (!res.ok) throw new Error("Network response was not ok");
+      const data = await res.json();
+
+      const byName = data.reduce((acc, row) => {
+        acc[row.name] = {
+          description: row.description,
+          time: row.time,
+        };
+        return acc;
+      }, {});
+
+      setEventsData(byName);
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
     }
   };
 
@@ -150,6 +179,24 @@ export default function MosqueAdminDashboard() {
     } catch (error) {
       alert('Failed to save data');
       console.error("Error saving Jamaat times:", error);
+    }
+  };
+
+  const saveDataEvents = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventsData }),
+      });
+
+      await res.json();
+      alert('Events saved successfully! Other pages can now access this data.');
+    } catch (error) {
+      alert('Failed to save data');
+      console.error("Error saving Events:", error);
     }
   };
 
@@ -556,7 +603,7 @@ export default function MosqueAdminDashboard() {
 
 
 
-
+// JAMAAT
 
 
   const addNewEntryJamaat = () => {
@@ -584,13 +631,14 @@ export default function MosqueAdminDashboard() {
       time: editFormJamaat.time,
     };
 
-
-
-    // sort entries, then rebuild object
     newJamaat = Object.entries(newJamaat)
-      .sort(([timeA], [timeB]) => toMinutes(timeA) - toMinutes(timeB))
-      .reduce((acc, [time, value]) => {
-        acc[time] = value;
+      .sort(([, aVal], [, bVal]) => {
+        const aTime = aVal?.time || "";
+        const bTime = bVal?.time || "";
+        return toMinutes24(aTime) - toMinutes24(bTime); // ascending
+      })
+      .reduce((acc, [key, val]) => {
+        acc[key] = val;
         return acc;
       }, {});
 
@@ -599,23 +647,12 @@ export default function MosqueAdminDashboard() {
   };
 
       // helper to turn "03:45 pm" into minutes since midnight
-  function toMinutes(t) {
-    if (!t) return Number.POSITIVE_INFINITY; // push empties to end
-
-    // "03:45 pm" → ["03:45", "pm"]
-    const [timePart, ampm] = t.toLowerCase().split(" ");
-    const [hStr, mStr] = timePart.split(":");
-    let hour = parseInt(hStr, 10);
-    const minute = parseInt(mStr, 10);
-
-    if (ampm === "am") {
-      if (hour === 12) hour = 0; // 12:xx am → 00:xx
-    } else if (ampm === "pm") {
-      if (hour !== 12) hour += 12; // 1..11 pm → 13..23
+  // sort entries, then rebuild object
+    function toMinutes24(t) {
+      if (!t) return Number.POSITIVE_INFINITY;
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
     }
-
-    return hour * 60 + minute;
-  }
 
   const deleteEntryJamaat = async (index) =>  {
     if (confirm('Delete this entry?')) {
@@ -703,10 +740,18 @@ export default function MosqueAdminDashboard() {
   let filteredTimesJamaat = jamaatData ? Object.entries(jamaatData) : [];
 
   filteredTimesJamaat = filteredTimesJamaat
-    .filter(([key]) =>
-      !jamaatName ? true : key.toLowerCase().includes(jamaatName.toLowerCase())
-    )
-    .map(([key, value]) => ({ name: key, ...value }));
+  // 1) filter by name (key)
+  .filter(([key]) =>
+    !jamaatName ? true : key.toLowerCase().includes(jamaatName.toLowerCase())
+  )
+  // 2) sort by value.time ascending
+  .sort(([, aVal], [, bVal]) => {
+    const aTime = aVal?.time || "";
+    const bTime = bVal?.time || "";
+    return toMinutes24(aTime) - toMinutes24(bTime);
+  })
+  // 3) map to final shape
+  .map(([key, value]) => ({ name: key, ...value }));
 
   // LOGIN SCREEN
   if (!isAuthenticated) {
@@ -790,24 +835,31 @@ export default function MosqueAdminDashboard() {
           </div>
 
           {/* Mosque Info */}
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4 ">
-            <div className='flex flex-wrap gap-2'>
-              <label className=" text-sm font-medium text-gray-700 mb-2">Input JSON Data</label>
-              <input
-                type="text"
-                value={inputJSON}
-                onChange={(e) => setInputJSON(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex"
-              />
-              <button
-                onClick={importInputJSON}
-                className="bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-3"
-                >
-                  <Save className="w-4 h-4" />
-                  Import JSON input
-                </button>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();   // stop browser submit
+              importInputJSON();          // do your React save (which may close modal)
+            }}>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4 ">
+              <div className='flex flex-wrap gap-2'>
+                <label className=" text-sm font-medium text-gray-700 mb-2">Input JSON Data</label>
+                <input
+                  type="text"
+                  value={inputJSON}
+                  onChange={(e) => setInputJSON(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex"
+                />
+                <button
+                  type="submit"
+                  // onClick={importInputJSON}
+                  className="bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-3"
+                  >
+                    <Save className="w-4 h-4" />
+                    Import JSON input
+                  </button>
+              </div>
             </div>
-          </div>
+          </form>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-3">
@@ -869,62 +921,71 @@ export default function MosqueAdminDashboard() {
 
         {/* Edit Form Modal */}
         {editingIndex !== null && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {editingIndex === -1 ? 'Add New Entry' : 'Edit Entry'}
-                </h2>
-                <button
-                  onClick={() => setEditingIndex(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-                  <input
-                    type="date"
-                    value={editForm.date}
-                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  />
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();   // stop browser submit
+              saveEntry();          // do your React save (which may close modal)
+            }}>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {editingIndex === -1 ? 'Add New Entry' : 'Edit Entry'}
+                  </h2>
+                  <button
+                    type="button" 
+                    onClick={() => setEditingIndex(null)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
 
-                {['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].map(prayer => (
-                  <div key={prayer}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                      {prayer}
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
                     <input
-                      type="time"
-                      value={editForm[prayer]}
-                      onChange={(e) => setEditForm({ ...editForm, [prayer]: e.target.value })}
+                      type="date"
+                      value={editForm.date}
+                      onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
-                ))}
-              </div>
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={saveEntry}
-                  className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
-                >
-                  Save Entry
-                </button>
-                <button
-                  onClick={() => setEditingIndex(null)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
+                  {['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].map(prayer => (
+                    <div key={prayer}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                        {prayer}
+                      </label>
+                      <input
+                        type="time"
+                        value={editForm[prayer]}
+                        onChange={(e) => setEditForm({ ...editForm, [prayer]: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="submit"
+                    // onClick={saveEntry}
+                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
+                  >
+                    Save Entry
+                  </button>
+                  <button
+                    type="button" 
+                    onClick={() => setEditingIndex(null)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Prayer Times Table */}
@@ -1022,6 +1083,7 @@ export default function MosqueAdminDashboard() {
               <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
             </div>
             <button
+              type="button"
               onClick={saveDataJamaat}
               className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
             >
@@ -1041,6 +1103,7 @@ export default function MosqueAdminDashboard() {
               </div>
             )} */}
             <button
+              type="button"
               onClick={addNewEntryJamaat}
               className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
             >
@@ -1052,59 +1115,68 @@ export default function MosqueAdminDashboard() {
 
         {/* Edit Form Modal */}
         {editingIndexJamaat !== null && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {editingIndexJamaat === -1 ? 'Add New Entry' : 'Edit Entry'}
-                </h2>
-                <button
-                  onClick={() => setEditingIndexJamaat(null)}
-                  className="text-gray-500 hover:text-gray-700">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Jamaat Name *</label>
-                  <input
-                    type="text"
-                    value={editFormJamaat.name}
-                    onChange={(e) => setEditFormJamaat({ ...editFormJamaat, name: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();   // stop browser submit
+              saveEntryJamaat();          // do your React save (which may close modal)
+            }}>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {editingIndexJamaat === -1 ? 'Add New Entry' : 'Edit Entry'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setEditingIndexJamaat(null)}
+                    className="text-gray-500 hover:text-gray-700">
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
 
-                  <div key="Time">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                      Time
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Jamaat Name *</label>
                     <input
-                      type="time"
-                      value={editFormJamaat.time}
-                      onChange={(e) => setEditFormJamaat({ ...editFormJamaat, time: e.target.value })}
+                      type="text"
+                      value={editFormJamaat.name}
+                      onChange={(e) => setEditFormJamaat({ ...editFormJamaat, name: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
-              </div>
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={saveEntryJamaat}
-                  className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
-                >
-                  Save Entry
-                </button>
-                <button
-                  onClick={() => setEditingIndexJamaat(null)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
+                    <div key="Time">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        value={editFormJamaat.time}
+                        onChange={(e) => setEditFormJamaat({ ...editFormJamaat, time: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="submit"
+                    // onClick={saveEntryJamaat}
+                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
+                  >
+                    Save Entry
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingIndexJamaat(null)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Prayer Times Table */}
