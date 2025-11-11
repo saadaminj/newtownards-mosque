@@ -18,7 +18,7 @@ export default function MosqueAdminDashboard() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [searchDate, setSearchDate] = useState('');
   const [jamaatName, setJamaatName] = useState('');
-  const [searchEvents, setSearchEvents] = useState('');
+  const [searchEventName, setSearchEventName] = useState('');
   const [editForm, setEditForm] = useState({
     date: '',
     fajr: '',
@@ -38,6 +38,7 @@ export default function MosqueAdminDashboard() {
   const [editingIndexEvents, setEditingIndexEvents] = useState(null);
   const [editFormEvents, setEditFormEvents] = useState({
     name: '',
+    description: '',
     time:''
   });
 
@@ -703,6 +704,105 @@ export default function MosqueAdminDashboard() {
     setEditFormJamaat({name:index,...jamaatData[index]});
   };
 
+
+
+  //Events
+
+
+
+  const addNewEntryEvents = () => {
+    setEditingIndexEvents(-1);
+    setEditFormEvents({
+      name: '',
+      description:'',
+      time: ''
+    });
+  };
+
+  const editEntryEvents = (index) => {
+    setEditingIndexEvents(index);
+    setEditFormEvents({name:index,...eventsData[index]});
+  };
+
+  const saveEntryEvents = () => {
+    if (!editFormEvents || !editFormEvents.name || editFormEvents.name.trim().length === 0) {
+      alert("Name is required");
+      return;
+    }
+
+    let newEvent = {...eventsData};
+
+    newEvent[editFormEvents.name] = {
+      description: editFormEvents.description,
+      time: editFormEvents.time,
+    };
+
+    newEvent = Object.entries(newEvent)
+      .sort(([, aVal], [, bVal]) => {
+        const aTime = aVal?.time || "";
+        const bTime = bVal?.time || "";
+        return toMinutes24(aTime) - toMinutes24(bTime); // ascending
+      })
+      .reduce((acc, [key, val]) => {
+        acc[key] = val;
+        return acc;
+      }, {});
+
+    setEventsData(newEvent);
+    setEditingIndexEvents(null);
+  };
+
+    
+
+  const deleteEntryEvents = async (index) =>  {
+    if (confirm('Delete this entry?')) {
+      // const newTimes = prayerData.filter((_, i) => i !== index);
+      // setPrayerData({ ...prayerData,  newTimes });
+      
+      try{
+        const response = await fetch(`http://localhost:4000/api/events/${index}`, {
+          method: "DELETE",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // handle error (400, 404, 500, etc.)
+          console.error("Error:", data.error);
+          if((data.error).includes("nothing to delete")){
+            setEventsData(prev => {
+              const updated = { ...prev };
+              delete updated[index]; // your key here
+              return updated;
+            });
+          }
+          else{
+            alert(`Error (${response.status}): ${data.error}`);
+          }
+          return;
+      
+        }
+        else{
+          setEventsData(prev => {
+            const updated = { ...prev };
+            delete updated[index]; // your key here
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error("Network or JSON error:", err);
+        alert("Failed to connect to server.");
+      }
+    }
+    
+    
+  };
+
+  const duplicateEntryEvents = (index) => {
+    setEditingIndexEvents(-1);
+    setEditFormEvents({name:index,...eventsData[index]});
+  };
+
   // const generateYearTemplate = () => {
   //   const year = prayerData.year;
   //   const days = [];
@@ -752,6 +852,29 @@ export default function MosqueAdminDashboard() {
   })
   // 3) map to final shape
   .map(([key, value]) => ({ name: key, ...value }));
+
+  let filteredTimesEvents = eventsData ? Object.entries(eventsData) : [];
+
+  filteredTimesEvents = filteredTimesEvents
+    // 1) filter by name (key)
+    .filter(([key]) =>
+      !searchEventName
+        ? true
+        : key.toLowerCase().includes(searchEventName.toLowerCase())
+    )
+    // 2) sort by value.time ascending
+    .sort(([, aVal], [, bVal]) => {
+      const aTime = aVal?.time || "";
+      const bTime = bVal?.time || "";
+      return toMinutes24(aTime) - toMinutes24(bTime);
+    })
+    // 3) map to clean shape
+    .map(([key, value]) => ({
+      name: value?.name || key,        // prefer value.name if present
+      time: value?.time || "",
+      description: value?.description || "",
+    }));
+
 
   // LOGIN SCREEN
   if (!isAuthenticated) {
@@ -1236,6 +1359,201 @@ export default function MosqueAdminDashboard() {
                             </button>
                             <button
                               onClick={() => deleteEntryJamaat(jamaatName)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      )}
+      {activeTab === 'events' && (
+        <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-8 h-8 text-emerald-600" />
+              <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
+            </div>
+            <button
+              type="button"
+              onClick={saveDataEvents}
+              className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Save All Changes
+            </button>
+          </div>
+
+          
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            {/* {processingImage && (
+              <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                <p className="text-blue-800 font-medium">Processing image and extracting prayer times...</p>
+              </div>
+            )} */}
+            <button
+              type="button"
+              onClick={addNewEntryEvents}
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Entry
+            </button>
+          </div>
+        </div>
+
+        {/* Edit Form Modal */}
+        {editingIndexEvents !== null && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();   // stop browser submit
+              saveEntryEvents();          // do your React save (which may close modal)
+            }}>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {editingIndexEvents === -1 ? 'Add New Entry' : 'Edit Entry'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setEditingIndexEvents(null)}
+                    className="text-gray-500 hover:text-gray-700">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Event Name *</label>
+                    <input
+                      type="text"
+                      value={editFormEvents.name}
+                      onChange={(e) => setEditFormEvents({ ...editFormEvents, name: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                    <div key="Description">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormEvents.description}
+                        onChange={(e) => setEditFormEvents({ ...editFormEvents, description: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div key="Time">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        value={editFormEvents.time}
+                        onChange={(e) => setEditFormEvents({ ...editFormEvents, time: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="submit"
+                    // onClick={saveEntryJamaat}
+                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
+                  >
+                    Save Entry
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingIndexEvents(null)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* Prayer Times Table */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Events</h2>
+            <div className="flex items-center gap-3">
+              <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
+              <input
+                type="text"
+                placeholder="Search name"
+                value={searchEventName}
+                onChange={(e) => setSearchEventName(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Event</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Description</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Time</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTimesEvents.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                      No entries yet. Click "Add Entry" to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTimesEvents.map((event) => {
+                    const eventName = event.name; 
+                    return (
+                      <tr key={eventName} className="border-t border-gray-200 hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-800">{event.name}</td>
+                        <td className="px-4 py-3 font-medium text-gray-800">{event.description}</td>
+                        <td className="px-4 py-3 text-gray-600">{event.time || '-'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => editEntryEvents(eventName)}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => duplicateEntryEvents(eventName)}
+                              className="text-green-600 hover:text-green-800"
+                              title="Duplicate"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => deleteEntryEvents(eventName)}
                               className="text-red-600 hover:text-red-800"
                               title="Delete"
                             >

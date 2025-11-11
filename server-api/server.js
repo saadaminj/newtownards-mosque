@@ -155,6 +155,8 @@ app.post("/api/events", (req, res) => {
       .json({ error: "events data must be an object keyed by date" });
   }
 
+  console.log(payload);
+
   const rows = Object.entries(payload).map(([name, data]) => ({
     name,
     description: data.description || null,
@@ -165,7 +167,7 @@ app.post("/api/events", (req, res) => {
     INSERT INTO events (name,description, time)
     VALUES (?,?,?)
     ON CONFLICT(name) DO UPDATE SET
-      description = excluded.description
+      description = excluded.description,
       time = excluded.time
   `);
 
