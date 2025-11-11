@@ -34,7 +34,6 @@ export default function MosqueAdminDashboard() {
         
         console.log(res);
         const data = await res.json();
-        console.log(data[0]);
         setServerHash(data[0].passtext);
         // if (Array.isArray(data) && data.length > 0) {
         //   setServerHash(data[0].hash);
