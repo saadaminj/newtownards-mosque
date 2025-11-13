@@ -68,7 +68,6 @@ app.post("/api/jamaat", (req, res) => {
     try {
       payload = JSON.parse(payload);
     } catch (err) {
-      console.log(err);
       return res.status(400).json({ error: "jamaaat JSON string is invalid" });
     }
   }
@@ -105,7 +104,6 @@ app.post("/api/jamaat", (req, res) => {
     insertMany(rows);
     res.json({ ok: true, count: rows.length });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "failed to upsert jamaat times" });
   }
 });
@@ -143,7 +141,6 @@ app.post("/api/events", (req, res) => {
     try {
       payload = JSON.parse(payload);
     } catch (err) {
-      console.log(err);
       return res.status(400).json({ error: "events JSON string is invalid" });
     }
   }
@@ -154,8 +151,6 @@ app.post("/api/events", (req, res) => {
       .status(400)
       .json({ error: "events data must be an object keyed by date" });
   }
-
-  console.log(payload);
 
   const rows = Object.entries(payload).map(([name, data]) => ({
     name,
@@ -185,7 +180,6 @@ app.post("/api/events", (req, res) => {
     insertMany(rows);
     res.json({ ok: true, count: rows.length });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "failed to upsert events" });
   }
 });
@@ -205,7 +199,6 @@ app.delete("/api/events/:name", (req, res) => {
 const count = db.prepare('SELECT COUNT(*) as c FROM password').get().c;
 if (count === 0) {
   db.prepare('INSERT INTO password (passtext) VALUES (?)').run('$2b$10$7Y9gpKG2CMz/D4nvqhlbE.HWUiWYpB6p4nbJZrntQn3fdw6pVGA/W').run();
-  console.log('Default password inserted');
 }
 
 app.get('/api/password', async (req, res) => {
@@ -215,17 +208,9 @@ app.get('/api/password', async (req, res) => {
       return res.status(404).json({ error: "no password found" });
     }
     return res.json({ passtext: rows[0].passtext });
-    // hash each password before sending
-    // const hashed = await Promise.all(
-    //   rows.map(async (row) => {
-    //     const hash = await bcrypt.hash(row.passtext, 10); // 10 = salt rounds
-    //     return {hash};
-    //   })
-    // );
 
     res.json(hashed);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'failed to fetch password' });
   }
 });
@@ -296,7 +281,6 @@ app.post("/api/prayer_times", (req, res) => {
     insertMany(rows);
     res.json({ ok: true, count: rows.length });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "failed to upsert prayer_times" });
   }
 });
@@ -321,7 +305,6 @@ app.delete("/api/prayer_times/:date", (req, res) => {
 
     res.json({ ok: true, deleted: date });
   } catch (err) {
-    console.error("delete failed:", err);
     res.status(500).json({ error: "failed to delete" });
   }
 });
