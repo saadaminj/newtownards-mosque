@@ -1,80 +1,113 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,useCallback , useEffect } from 'react';
 import { Clock, Heart, BookOpen, Calendar, MapPin, Phone, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 export default function MosqueWebsite() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState('home');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [prayerData, setPrayerData] = useState([]);
+  const [jamaatData, setJamaatData] = useState([]);
+  const [eventsData, setEventsData] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
-  // Generate prayer times for the entire year
-  const generateYearPrayerTimes = () => {
-    const times = {};
-    const currentYear = new Date().getFullYear();
-    const baseYear = currentYear;
-    
-    // Prayer times change gradually throughout the year
-    // This is a simplified calculation - real mosques use precise astronomical calculations
-    for (let month = 0; month < 12; month++) {
-      for (let day = 1; day <= new Date(baseYear, month + 1, 0).getDate(); day++) {
-        const dateKey = `${baseYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        // Calculate day of year (0-365)
-        const dayOfYear = Math.floor((new Date(baseYear, month, day) - new Date(baseYear, 0, 0)) / 86400000);
-        
-        // Sunrise varies from ~8:00 AM (winter) to ~4:30 AM (summer)
-        const sunriseMinutes = 480 - 210 * Math.sin((dayOfYear - 80) * 2 * Math.PI / 365);
-        
-        // Calculate Fajr (1.5 hours before sunrise)
-        const fajrMinutes = sunriseMinutes - 90;
-        
-        // Dhuhr is around solar noon (12:00-1:00 PM depending on season)
-        const dhuhrMinutes = 720 + 30 * Math.sin((dayOfYear - 80) * 2 * Math.PI / 365);
-        
-        // Asr in mid-afternoon (3:00-4:30 PM)
-        const asrMinutes = 900 + 45 * Math.sin((dayOfYear - 80) * 2 * Math.PI / 365);
-        
-        // Maghrib at sunset (varies from ~4:00 PM to ~9:00 PM)
-        const maghribMinutes = sunriseMinutes + 720;
-        
-        // Isha (1.5 hours after Maghrib)
-        const ishaMinutes = maghribMinutes + 90;
-        
-        times[dateKey] = {
-          Fajr: formatTime(fajrMinutes),
-          Sunrise: formatTime(sunriseMinutes),
-          Dhuhr: formatTime(dhuhrMinutes),
-          Asr: formatTime(asrMinutes),
-          Maghrib: formatTime(maghribMinutes),
-          Isha: formatTime(ishaMinutes),
-          Jummah: '01:00 PM'
+  const loadData = useCallback(() => {
+    loadDataPrayerTimes();
+    loadDataJamaat();
+    loadDataEvents();
+  }, []);
+
+  // 3) Data loading effect – also runs once on mount
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+
+
+  const loadDataPrayerTimes = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/prayer_times");
+      if (!res.ok) throw new Error("Network response was not ok");
+      const data = await res.json();
+
+      const byDate = data.reduce((acc, row) => {
+        acc[row.date] = {
+          fajr: row.fajr,
+          sunrise: row.sunrise,
+          dhuhr: row.dhuhr,
+          asr: row.asr,
+          maghrib: row.maghrib,
+          isha: row.isha,
         };
-      }
+        return acc;
+      }, {});
+
+      setPrayerData(byDate);
+    } catch (error) {
+      console.error("Failed to fetch prayer times:", error);
     }
-    return times;
   };
 
-  const formatTime = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
-    return `${String(displayHours).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${period}`;
+  const loadDataJamaat = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/jamaat");
+      if (!res.ok) throw new Error("Network response was not ok");
+      const data = await res.json();
+
+      const byName = data.reduce((acc, row) => {
+        acc[row.name] = {
+          time: row.time,
+        };
+        return acc;
+      }, {});
+
+      setJamaatData(byName);
+    } catch (error) {
+      console.error("Failed to fetch jamaat times:", error);
+    }
   };
 
-  const allPrayerTimes = generateYearPrayerTimes();
+  const loadDataEvents = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/events");
+      if (!res.ok) throw new Error("Network response was not ok");
+      const data = await res.json();
 
+      const byName = data.reduce((acc, row) => {
+        acc[row.name] = {
+          description: row.description,
+          time: row.time,
+        };
+        return acc;
+      }, {});
+
+      setEventsData(byName);
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    }
+  };
+  
   const getDateKey = (date) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
   const getCurrentPrayerTimes = () => {
-    return allPrayerTimes[getDateKey(selectedDate)] || allPrayerTimes[getDateKey(new Date())];
+    return prayerData[getDateKey(selectedDate)] || prayerData[getDateKey(new Date())] || defaultTimings;
   };
-
+  const defaultTimings = {
+    fajr: "05:16",
+    sunrise: "06:54",
+    dhuhr: "13:29",
+    asr: "17:00",
+    maghrib: "20:02",
+    isha: "21:34",
+  };
   const changeDate = (days) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + days);
@@ -115,13 +148,6 @@ export default function MosqueWebsite() {
     }
   ];
 
-  const events = [
-    { date: 'Every Friday', event: 'Jummah Prayer & Khutbah', time: '1:00 PM' },
-    { date: 'Every Saturday', event: 'Quran Classes for Children', time: '10:00 AM' },
-    { date: 'Every Sunday', event: 'Islamic Studies for Adults', time: '2:00 PM' },
-    { date: 'Monthly', event: 'Community Iftar (Ramadan)', time: 'Maghrib Time' }
-  ];
-
   const MosqueIcon = () => (
     <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M32 8L26 18H38L32 8Z" fill="currentColor"/>
@@ -141,7 +167,7 @@ export default function MosqueWebsite() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-center mb-2">
             <MosqueIcon />
-            <h1 className="text-4xl font-bold ml-4">Central Community Mosque</h1>
+            <h1 className="text-4xl font-bold ml-4">Newtownards Islamic Cultural Centre</h1>
           </div>
           <p className="text-center text-emerald-100 text-lg">Peace be upon you - As-Salamu Alaikum</p>
           <div className="text-center mt-4 text-emerald-100 font-mono text-xl">
@@ -152,24 +178,55 @@ export default function MosqueWebsite() {
 
       {/* Navigation */}
       <nav className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-center space-x-2 py-4 flex-wrap">
-            {['home', 'prayers', 'donate', 'info', 'events', 'contact'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  activeTab === tab
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-emerald-100'
-                }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
+  <div className="container mx-auto px-4">
+    {/* Top row: brand + hamburger on mobile */}
+    <div className="flex items-center justify-between py-3 md:hidden">
+      <span className="font-semibold text-emerald-700">
+        Menu
+      </span>
+      <button
+        type="button"
+        onClick={() => setIsMobileMenuOpen(prev => !prev)}
+        className="inline-flex items-center justify-center p-2 rounded-md border border-emerald-600 text-emerald-700"
+      >
+        {/* Simple hamburger icon */}
+        <span className="sr-only">Open main menu</span>
+        <div className="space-y-1">
+          <span className="block h-0.5 w-5 bg-emerald-700"></span>
+          <span className="block h-0.5 w-5 bg-emerald-700"></span>
+          <span className="block h-0.5 w-5 bg-emerald-700"></span>
         </div>
-      </nav>
+      </button>
+    </div>
+
+    {/* Menu items */}
+    <div
+      className={`
+        flex flex-col space-y-2 pb-3
+        ${isMobileMenuOpen ? "flex" : "hidden"}
+        md:flex md:flex-row md:space-y-0 md:space-x-2 md:justify-center md:py-4
+      `}
+    >
+      {["home", "prayers", "donate", "info", "events", "contact"].map(tab => (
+        <button
+          key={tab}
+          onClick={() => {
+            setActiveTab(tab);
+            setIsMobileMenuOpen(false); // close menu on select (mobile)
+          }}
+          className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+            activeTab === tab
+              ? "bg-emerald-600 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-emerald-100"
+          }`}
+        >
+          {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        </button>
+      ))}
+    </div>
+  </div>
+</nav>
+
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -188,13 +245,13 @@ export default function MosqueWebsite() {
             <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl shadow-lg p-8 text-white">
               <div className="flex items-center justify-center mb-6">
                 <Clock className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Today's Prayer Times</h3>
+                <h3 className="text-2xl font-bold">Today's Jamaat Time</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(prayerTimes).filter(([name]) => name !== 'Sunrise' && name !== 'Jummah').map(([name, time]) => (
+                {Object.entries(jamaatData).map(([name, value]) => (
                   <div key={name} className="bg-white/10 backdrop-blur rounded-lg p-4 text-center">
                     <div className="font-bold text-lg">{name}</div>
-                    <div className="text-2xl font-mono mt-2">{time}</div>
+                    <div className="text-2xl font-mono mt-2">{value.time}</div>
                   </div>
                 ))}
               </div>
@@ -280,14 +337,14 @@ export default function MosqueWebsite() {
             <div className="space-y-4 max-w-2xl mx-auto">
               {Object.entries(prayerTimes).map(([name, time]) => (
                 <div key={name} className="flex justify-between items-center p-6 bg-gradient-to-r from-emerald-50 to-white rounded-lg border-l-4 border-emerald-600 hover:shadow-md transition-shadow">
-                  <span className="text-xl font-bold text-gray-800">{name}</span>
+                  <span className="text-xl font-bold text-gray-800">{name.charAt(0).toUpperCase() + name.slice(1)}</span>
                   <span className="text-2xl font-mono text-emerald-700">{time}</span>
                 </div>
               ))}
             </div>
             <div className="mt-8 p-6 bg-amber-50 rounded-lg border-l-4 border-amber-500 max-w-2xl mx-auto">
               <p className="text-gray-700">
-                <strong>Note:</strong> Prayer times are calculated based on astronomical data for London, UK. 
+                <strong>Note:</strong> Prayer times are calculated based on astronomical data. 
                 Jamaah (congregation) starts 10-15 minutes after the Adhan (call to prayer).
               </p>
             </div>
@@ -381,15 +438,15 @@ export default function MosqueWebsite() {
               <h2 className="text-3xl font-bold text-emerald-800">Events & Programs</h2>
             </div>
             <div className="space-y-4 max-w-2xl mx-auto">
-              {events.map((event, index) => (
-                <div key={index} className="bg-gradient-to-r from-emerald-50 to-white p-6 rounded-lg border-l-4 border-emerald-600 hover:shadow-md transition-shadow">
+              {Object.entries(eventsData).map(([events, value]) => (
+                <div key={events} className="bg-gradient-to-r from-emerald-50 to-white p-6 rounded-lg border-l-4 border-emerald-600 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-emerald-800">{event.event}</h3>
+                    <h3 className="text-xl font-bold text-emerald-800">{events}</h3>
                     <span className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      {event.time}
+                      {value.description}
                     </span>
                   </div>
-                  <p className="text-gray-600 font-semibold">{event.date}</p>
+                  <p className="text-gray-600 font-semibold">{value.time}</p>
                 </div>
               ))}
             </div>
