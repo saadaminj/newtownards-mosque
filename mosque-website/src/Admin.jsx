@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Calendar, Download, Plus, Edit2, Save, X, Search, Trash2, Copy, Lock } from 'lucide-react';
 import bcrypt from "bcryptjs";
+import { JamaatAdmin } from './widgets/admin/jamaat_admin';
+import { AdminHeader } from './widgets/admin/header';
 
 let MONTH = "";
 let YEAR = "";
@@ -840,43 +842,35 @@ export default function MosqueAdminDashboard() {
   let filteredTimesJamaat = jamaatData ? Object.entries(jamaatData) : [];
 
   filteredTimesJamaat = filteredTimesJamaat
-  // 1) filter by name (key)
   .filter(([key]) =>
     !jamaatName ? true : key.toLowerCase().includes(jamaatName.toLowerCase())
   )
-  // 2) sort by value.time ascending
   .sort(([, aVal], [, bVal]) => {
     const aTime = aVal?.time || "";
     const bTime = bVal?.time || "";
     return toMinutes24(aTime) - toMinutes24(bTime);
   })
-  // 3) map to final shape
   .map(([key, value]) => ({ name: key, ...value }));
 
   let filteredTimesEvents = eventsData ? Object.entries(eventsData) : [];
 
   filteredTimesEvents = filteredTimesEvents
-    // 1) filter by name (key)
     .filter(([key]) =>
       !searchEventName
         ? true
         : key.toLowerCase().includes(searchEventName.toLowerCase())
     )
-    // 2) sort by value.time ascending
     .sort(([, aVal], [, bVal]) => {
       const aTime = aVal?.time || "";
       const bTime = bVal?.time || "";
       return toMinutes24(aTime) - toMinutes24(bTime);
     })
-    // 3) map to clean shape
     .map(([key, value]) => ({
-      name: value?.name || key,        // prefer value.name if present
+      name: value?.name || key, 
       time: value?.time || "",
       description: value?.description || "",
     }));
 
-
-  // LOGIN SCREEN
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
@@ -941,108 +935,18 @@ export default function MosqueAdminDashboard() {
       </nav>
       {activeTab === 'prayers' && (
         <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-8 h-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
-            </div>
-            <button
-              onClick={saveData}
-              className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
-            >
-              <Save className="w-4 h-4" />
-              Save All Changes
-            </button>
-          </div>
+        
+        <AdminHeader 
+          saveData = {saveData} 
+          addNewEntry = {addNewEntry} 
+          downloadJSON = {downloadJSON} 
+          handleFileUpload = {handleFileUpload} 
+          data = {prayerData}
+          inputJSON={inputJSON}
+          importInputJSON={importInputJSON}
+          setInputJSON={setInputJSON}
+        />
 
-          {/* Mosque Info */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();   // stop browser submit
-              importInputJSON();          // do your React save (which may close modal)
-            }}>
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4 ">
-              <div className='flex flex-wrap gap-2'>
-                <label className=" text-sm font-medium text-gray-700 mb-2">Input JSON Data</label>
-                <input
-                  type="text"
-                  value={inputJSON}
-                  onChange={(e) => setInputJSON(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex"
-                />
-                <button
-                  type="submit"
-                  // onClick={importInputJSON}
-                  className="bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-3"
-                  >
-                    <Save className="w-4 h-4" />
-                    Import JSON input
-                  </button>
-              </div>
-            </div>
-          </form>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            {/* {processingImage && (
-              <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                <p className="text-blue-800 font-medium">Processing image and extracting prayer times...</p>
-              </div>
-            )} */}
-            <button
-              onClick={addNewEntry}
-              className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add Entry
-            </button>
-            {/* <button
-              onClick={generateYearTemplate}
-              className="bg-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2"
-            >
-              <Calendar className="w-4 h-4" />
-              Generate Year Template
-            </button> */}
-            <button
-              onClick={downloadJSON}
-              className="bg-gray-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-800 flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Export JSON
-            </button>
-            <label className="bg-gray-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-800 flex items-center gap-2 cursor-pointer">
-              <Upload className="w-4 h-4" />
-              Import JSON
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
-            {/* <label className="bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 flex items-center gap-2 cursor-pointer">
-              <Upload className="w-4 h-4" />
-              Import from Image
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-            </label> */}
-          </div>
-
-          <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Total Entries:</span> {Object.keys(prayerData).length} days
-            </p>
-          </div>
-        </div>
-
-        {/* Edit Form Modal */}
         {editingIndex !== null && (
           <form 
             onSubmit={(e) => {
@@ -1197,227 +1101,27 @@ export default function MosqueAdminDashboard() {
         </div>
       </div>)}
       {activeTab === 'jamaat' && (
-        <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-8 h-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
-            </div>
-            <button
-              type="button"
-              onClick={saveDataJamaat}
-              className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
-            >
-              <Save className="w-4 h-4" />
-              Save All Changes
-            </button>
-          </div>
-
-          
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            {/* {processingImage && (
-              <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                <p className="text-blue-800 font-medium">Processing image and extracting prayer times...</p>
-              </div>
-            )} */}
-            <button
-              type="button"
-              onClick={addNewEntryJamaat}
-              className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add Entry
-            </button>
-          </div>
+        <div>
+          <AdminHeader saveData={saveDataJamaat} addNewEntry={addNewEntryJamaat}/>
+          <JamaatAdmin eventsData={eventsData}
+            saveDataJamaat={saveDataJamaat}
+            addNewEntryJamaat={addNewEntryJamaat}
+            editingIndexJamaat={editingIndexJamaat}
+            setEditingIndexJamaat={setEditingIndexJamaat}
+            editFormJamaat={editFormJamaat}
+            setEditFormJamaat={setEditFormJamaat}
+            saveEntryJamaat={saveEntryJamaat}
+            jamaatName={jamaatName}
+            setJamaatName={setJamaatName}
+            filteredTimesJamaat={filteredTimesJamaat}
+            editEntryJamaat={editEntryJamaat}
+            duplicateEntryJamaat={duplicateEntryJamaat}
+            deleteEntryJamaat={deleteEntryJamaat}/>
         </div>
-
-        {/* Edit Form Modal */}
-        {editingIndexJamaat !== null && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();   // stop browser submit
-              saveEntryJamaat();          // do your React save (which may close modal)
-            }}>
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {editingIndexJamaat === -1 ? 'Add New Entry' : 'Edit Entry'}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => setEditingIndexJamaat(null)}
-                    className="text-gray-500 hover:text-gray-700">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Jamaat Name *</label>
-                    <input
-                      type="text"
-                      value={editFormJamaat.name}
-                      onChange={(e) => setEditFormJamaat({ ...editFormJamaat, name: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                    <div key="Time">
-                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                        Time
-                      </label>
-                      <input
-                        type="time"
-                        value={editFormJamaat.time}
-                        onChange={(e) => setEditFormJamaat({ ...editFormJamaat, time: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    type="submit"
-                    // onClick={saveEntryJamaat}
-                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
-                  >
-                    Save Entry
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingIndexJamaat(null)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
-        )}
-
-        {/* Prayer Times Table */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Jamaat Times</h2>
-            <div className="flex items-center gap-3">
-              <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
-              <input
-                type="text"
-                placeholder="Search name"
-                value={jamaatName}
-                onChange={(e) => setJamaatName(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Prayer Name</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Time</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTimesJamaat.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
-                      No entries yet. Click "Add Entry" to get started.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTimesJamaat.map((jamaat) => {
-                    const jamaatName = jamaat.name; 
-                    return (
-                      <tr key={jamaatName} className="border-t border-gray-200 hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-800">{jamaat.name}</td>
-                        <td className="px-4 py-3 text-gray-600">{jamaat.time || '-'}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => editEntryJamaat(jamaatName)}
-                              className="text-blue-600 hover:text-blue-800"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => duplicateEntryJamaat(jamaatName)}
-                              className="text-green-600 hover:text-green-800"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => deleteEntryJamaat(jamaatName)}
-                              className="text-red-600 hover:text-red-800"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
       )}
       {activeTab === 'events' && (
         <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-8 h-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
-            </div>
-            <button
-              type="button"
-              onClick={saveDataEvents}
-              className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
-            >
-              <Save className="w-4 h-4" />
-              Save All Changes
-            </button>
-          </div>
-
-          
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            {/* {processingImage && (
-              <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                <p className="text-blue-800 font-medium">Processing image and extracting prayer times...</p>
-              </div>
-            )} */}
-            <button
-              type="button"
-              onClick={addNewEntryEvents}
-              className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add Entry
-            </button>
-          </div>
-        </div>
-
-        {/* Edit Form Modal */}
+        <AdminHeader saveData={saveDataEvents} addNewEntry={addNewEntryEvents}/>
         {editingIndexEvents !== null && (
           <form
             onSubmit={(e) => {
@@ -1564,7 +1268,6 @@ export default function MosqueAdminDashboard() {
                       </tr>
                     );
                   })
-
                 )}
               </tbody>
             </table>
