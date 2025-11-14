@@ -125,10 +125,7 @@ export default function MosqueAdminDashboard() {
         const res = await fetch("http://localhost:4000/api/password");
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        setServerHash(data.passtext);    
-        // if (Array.isArray(data) && data.length > 0) {
-        //   setServerHash(data[0].hash);
-        // }
+        setServerHash(data.passtext);
       } catch (err) {
         console.error("Failed to fetch password:", err);
       }
@@ -136,6 +133,10 @@ export default function MosqueAdminDashboard() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if(serverHash === null){
+      fetchPassword();
+    }
 
     const isMatch = await bcrypt.compare(passwordInput, serverHash);
     
@@ -241,259 +242,6 @@ export default function MosqueAdminDashboard() {
       alert('Invalid JSON input',error);
     }
   };
-
-  // const handleImageUpload = async (e) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-
-  //   [MONTH, yearWithExt] = file.name.split("_");
-  //   YEAR = yearWithExt.split(".")[0];
-
-
-  //   setProcessingImage(true);
-
-  //   try {
-  //     const reader = new FileReader();
-  //     reader.onload = async (e) => {
-  //       try {
-  //           const worker = await createWorker("eng");
-  //           const {
-  //               data: { text },
-  //           } = await worker.recognize(file);
-  //           await worker.terminate();
-
-  //           setOcrText(text);
-  //           const jsonText = parsePrayerTable(text);
-  //           console.log(jsonText);
-  //           // const parsed = JSON.parse(jsonText);
-  //           let parsed = {};
-  //           parsed["prayer_times"] = jsonText;
-  //           // setResultJson({
-  //           // year: YEAR,
-  //           // prayer_times: parsed,
-  //           // });
-  //           if (parsed.prayer_times && parsed.prayer_times.length > 0) {
-  //             setPrayerData(parsed);
-  //             alert(`Successfully imported ${parsed.prayer_times.length} prayer time entries from image!`);
-  //           } else {
-  //               console.log(parsed);
-  //             alert('No prayer times found in the image');
-  //           }
-            
-  //       } catch (error) {
-  //         console.error(error);
-  //         alert('Failed to process image. Please ensure the image is clear and contains a prayer times table.');
-  //         setProcessingImage(false);
-  //       } finally {
-  //         setProcessingImage(false);
-  //       }
-  //     };
-
-  //     reader.readAsDataURL(file);
-  //   } catch (error) {
-  //     console.error(error);
-  //     alert('Failed to read image file');
-  //     setProcessingImage(false);
-  //   }
-  // };
-
-  // const handleImageUpload = async (e) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-
-  //   setProcessingImage(true);
-
-  //   try {
-  //     const reader = new FileReader();
-  //     reader.onload = async (e) => {
-  //       try {
-  //         // base64 without the prefix
-  //         const base64Image = e.target.result.split(',')[1];
-
-  //         // call your local Ollama
-  //         const response = await fetch('http://localhost:11435/api/generate', {
-  //           method: 'POST',
-  //           headers: {
-  //             'Content-Type': 'application/json',
-  //           },
-  //           body: JSON.stringify({
-  //             model: 'llava:latest', // or the vision model you pulled in Ollama
-  //             prompt: `This is a prayer times table from a mosque. The table shows prayer times with columns for different prayers (Fajr, Shrq/Sunrise, Dhuhr, Asr, Mgrb/Maghrib, Isha) and rows for each day of the month.
-  //                   Extract ALL prayer times from this image and return ONLY valid JSON (no markdown, no explanation) with this exact structure:
-
-  //                   {
-  //                     "2024-04-01":
-  //                       {
-  //                         "fajr": "05:16",
-  //                         "sunrise": "06:54",
-  //                         "dhuhr": "13:29",
-  //                         "asr": "17:00",
-  //                         "maghrib": "20:02",
-  //                         "isha": "21:34"
-  //                       },
-
-  //                     "2024-04-02":
-  //                       {
-  //                         "fajr": "05:16",
-  //                         "sunrise": "06:54",
-  //                         "dhuhr": "13:29",
-  //                         "asr": "17:00",
-  //                         "maghrib": "20:02",
-  //                         "isha": "21:34"
-  //                       },
-  //                   }
-
-  //                   CRITICAL INSTRUCTIONS:
-  //                   - The image has month name for e.g April, May, June convert it to number
-  //                   - 1 2 3 4 are days so convert month and days in keys such as YYYY-MM-DD 2025-04-01 (if april)
-  //                   - the image has prayer times, parse the text and put it into dictionary in this format: 
-  //                   {
-  //                     "2024-04-01":
-  //                       {
-  //                         "fajr": "05:16",
-  //                         "sunrise": "06:54",
-  //                         "dhuhr": "13:29",
-  //                         "asr": "17:00",
-  //                         "maghrib": "20:02",
-  //                         "isha": "21:34"
-  //                       },
-
-  //                     "2024-04-02":
-  //                       {
-  //                         "fajr": "05:16",
-  //                         "sunrise": "06:54",
-  //                         "dhuhr": "13:29",
-  //                         "asr": "17:00",
-  //                         "maghrib": "20:02",
-  //                         "isha": "21:34"
-  //                       },
-  //                   }
-  //                   - Each day prayer time is seperate and the dictionary should have 8, 30 or 31 days in it. Please extract times for whole month and put it in json object like you are told.
-  //                   - The image shows times in 12-hour format (e.g., 5.16 means 5:16 AM, 1.29 means 1:29 PM)
-  //                   - Times before noon (Fajr, Sunrise) are AM times
-  //                   - Times after noon (Dhuhr, Asr, Maghrib, Isha) are PM times
-  //                   - Convert ALL times to 24-hour format with colon separator (HH:MM)
-  //                   - Fajr and Sunrise: Keep as morning times (e.g., 5.16 → 05:16)
-  //                   - Dhuhr: Add 12 hours if needed (e.g., 1.29 → 13:29)
-  //                   - Asr: Add 12 hours (e.g., 5.00 → 17:00)
-  //                   - Maghrib: Add 12 hours (e.g., 8.02 → 20:02)
-  //                   - Isha: Add 12 hours (e.g., 9.34 → 21:34)
-  //                   - If time is already after 12, keep it
-  //                   - Date format: YYYY-MM-DD
-  //                   - Extract ALL days visible in the table
-  //                   - Return ONLY the JSON object, no other text`,
-
-  //             images: [base64Image],
-  //             stream: false
-  //           })
-  //         });
-
-  //         // 1) get JSON from Ollama
-  //         const data = await response.json();
-  //         console.log("ollama raw:", data);
-
-  //         // 2) Ollama puts the text in `data.response`, not `data.message.content`
-  //         const rawText = (data.response || "").trim();
-
-  //         // 3) strip ```json ... ``` if model added it
-  //         const cleaned = rawText
-  //           .replace(/```json\s*/i, "")
-  //           .replace(/```/g, "")
-  //           .trim();
-
-  //         // 4) sometimes model still appends text after the JSON
-  //         // so grab up to the last closing brace
-  //         const lastBrace = cleaned.lastIndexOf("}");
-  //         const jsonOnly = lastBrace !== -1 ? cleaned.slice(0, lastBrace + 1) : cleaned;
-
-  //         // 5) now parse
-  //         const parsed = JSON.parse(jsonOnly);
-  //         console.log("parsed:", parsed);
-
-  //         if (parsed && Object.keys(parsed).length > 0) {
-  //           // if you want to MERGE instead of replace, you can merge here
-  //           setPrayerData(parsed);
-  //           alert(`Successfully imported ${Object.keys(parsed).length} prayer time entries from image!`);
-  //         } else {
-  //           alert('No prayer times found in the image');
-  //         }
-
-  //       } catch (error) {
-  //         console.error(error);
-  //         alert('Failed to process image. Please ensure the image is clear and contains a prayer times table.');
-  //         setProcessingImage(false);
-  //       } finally {
-  //         setProcessingImage(false);
-  //       }
-  //     };
-
-  //     reader.readAsDataURL(file);
-  //   } catch (error) {
-  //     console.error(error);
-  //     alert('Failed to read image file');
-  //     setProcessingImage(false);
-  //   }
-  // };
-
-
-  // // convert things like "5.16" → "05:16", and if not morning → +12h
-  // const to24hFromDot = (timeStr, isMorning) => {
-  //   if (!timeStr) return "";
-  //   timeStr = timeStr.replace(":", ".").trim();
-  //   const parts = timeStr.split(".");
-  //   if (parts.length !== 2) return timeStr;
-  //   let h = parseInt(parts[0], 10);
-  //   const m = parseInt(parts[1], 10);
-  //   if (isMorning) {
-  //     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  //   } else {
-  //     if (h < 12) h += 12;
-  //     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  //   }
-  // };
-
-  // // parse OCR text that looks like your April table
-  // const parsePrayerTable = (text) => {
-  //   const lines = text.split("\n");
-  //   const entries = [];
-
-  //   for (let line of lines) {
-  //     line = line.trim();
-  //     if (!line) continue;
-  //   //   if (line.toLowerCase().startsWith("april")) continue;
-
-  //     // split by spaces
-  //     const parts = line.split(/\s+/);
-  //     // we expect: day fajr shrq dhuhr asr mgrb isha → 7 items min
-  //     if (parts.length < 7) continue;
-  //     if (!/^\d+$/.test(parts[0])) continue;
-
-  //     const day = parseInt(parts[0], 10);
-  //     const fajr = parts[1];
-  //     const shrq = parts[2];
-  //     const dhuhr = parts[3];
-  //     const asr = parts[4];
-  //     const mgrb = parts[5];
-  //     const isha = parts[6];
-
-  //     const dateStr = `${YEAR}-${String(MONTH).padStart(2, "0")}-${String(day).padStart(
-  //       2,
-  //       "0"
-  //     )}`;
-
-  //     entries.push({
-  //       date: dateStr,
-  //       fajr: to24hFromDot(fajr, true),
-  //       sunrise: to24hFromDot(shrq, true),
-  //       dhuhr: to24hFromDot(dhuhr, false),
-  //       asr: to24hFromDot(asr, false),
-  //       maghrib: to24hFromDot(mgrb, false),
-  //       isha: to24hFromDot(isha, false),
-  //     });
-  //   }
-
-  //   return entries;
-  // };
 
   const downloadJSON = () => {
     const blob = new Blob([JSON.stringify(prayerData, null, 2)], { type: 'application/json' });
@@ -1276,7 +1024,6 @@ export default function MosqueAdminDashboard() {
       </div>
       )}
     </div>
-    
   );
 }
 
