@@ -37,14 +37,12 @@ db.exec(`
   );
 `);
 
-// create password table if not exists
 db.exec(`
   CREATE TABLE IF NOT EXISTS password (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     passtext TEXT NOT NULL
   );
 `);
-
 
 app.get("/api/jamaat", (req, res) => {
   const rows = db.prepare(`
@@ -196,6 +194,7 @@ app.delete("/api/events/:name", (req, res) => {
 
 // insert default password if not exists
 // db.prepare('DELETE FROM password;').run();
+// run this to hash the password to store it in db : await bcrypt.hash(password, 10);
 const count = db.prepare('SELECT COUNT(*) as c FROM password').get().c;
 if (count === 0) {
   db.prepare('INSERT INTO password (passtext) VALUES (?)').run('$2b$10$7Y9gpKG2CMz/D4nvqhlbE.HWUiWYpB6p4nbJZrntQn3fdw6pVGA/W').run();
@@ -284,8 +283,6 @@ app.post("/api/prayer_times", (req, res) => {
     res.status(500).json({ error: "failed to upsert prayer_times" });
   }
 });
-
-
 
 // DELETE /api/prayer_times/:date
 app.delete("/api/prayer_times/:date", (req, res) => {

@@ -3,10 +3,10 @@ import { Edit2, Search, Trash2, Copy } from 'lucide-react';
 export const JamaatDisplayWidget = ({
   jamaatName,
   setJamaatName,
-  filteredTimesJamaat,
-  editEntryJamaat,
-  duplicateEntryJamaat,
-  deleteEntryJamaat,
+  filteredTimes,
+  editEntry,
+  duplicateEntry,
+  deleteEntry,
 }) => {
   return (
     <div>
@@ -35,14 +35,14 @@ export const JamaatDisplayWidget = ({
                 </tr>
               </thead>
               <tbody>
-                {(!filteredTimesJamaat || (filteredTimesJamaat.length === 0)) ? (
+                {(!filteredTimes || (filteredTimes.length === 0)) ? (
                   <tr>
                     <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
                       No entries yet. Click "Add Entry" to get started.
                     </td>
                   </tr>
                 ) : (
-                  filteredTimesJamaat?.map((jamaat) => {
+                  filteredTimes?.map((jamaat) => {
                     const jamaatName = jamaat.name; 
                     return (
                       <tr key={jamaatName} className="border-t border-gray-200 hover:bg-gray-50">
@@ -51,21 +51,21 @@ export const JamaatDisplayWidget = ({
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             <button
-                              onClick={() => editEntryJamaat(jamaatName)}
+                              onClick={() => editEntry(jamaatName)}
                               className="text-blue-600 hover:text-blue-800"
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => duplicateEntryJamaat(jamaatName)}
+                              onClick={() => duplicateEntry(jamaatName)}
                               className="text-green-600 hover:text-green-800"
                               title="Duplicate"
                             >
                               <Copy className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => deleteEntryJamaat(jamaatName)}
+                              onClick={() => deleteEntry(jamaatName)}
                               className="text-red-600 hover:text-red-800"
                               title="Delete"
                             >

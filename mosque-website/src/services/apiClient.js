@@ -60,8 +60,47 @@ export async function apiPost(path, body) {
     } catch {
       throw new Error("Invalid JSON response from server");
     }
+  } catch {
+    // console.error("apiPost error:", err);
+    throw new Error("Sorry, something went wrong. We are looking into it.");
+  }
+}
+
+export async function apiDelete(path, body) {
+  try {
+    const url = `${API_BASE_URL}${path}`;
+
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      credentials: "same-origin",
+      // Only send body if provided (some DELETE endpoints don't expect a body)
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+
+    if (!res.ok) {
+      // const message = `Request failed with status ${res.status}`;
+      throw new Error(res.statusText);
+    }
+
+    // Many DELETE endpoints return 204 No Content
+    if (res.status === 204) {
+      return null;
+    }
+
+    try {
+      return await res.json();
+    } catch {
+      throw new Error("Invalid JSON response from server");
+    }
   } catch (err) {
-    console.error("apiPost error:", err);
+    // console.error("apiDelete error:", err);
+    if(String(err).includes("Not Found")){
+      throw new Error("This entry does not exist in Database");
+    }
     throw new Error("Sorry, something went wrong. We are looking into it.");
   }
 }

@@ -9,9 +9,9 @@ import { EventsEditingWidget } from './widgets/admin/events_editing_widget';
 import { PrayerDisplayWidget } from './widgets/admin/prayer_display_widget';
 import { EventsDisplayWidget } from './widgets/admin/events_display_widget';
 import { Login } from './widgets/admin/login';
-import { fetchEvents } from './services/eventService';
-import { fetchJamaatTimes } from './services/jamaatService';
-import { fetchPrayerTimes, savePrayerTimes } from './services/prayerService';
+import { fetchPrayerTimes, savePrayerTimes, deletePrayer } from './services/prayerService';
+import { deleteJamaat, fetchJamaatTimes, saveJamaatTimes } from './services/jamaatService';
+import { deleteEvent, fetchEvents, saveEvents } from './services/eventService';
 import { fetchPassword } from './services/passwordService';
 
 export default function MosqueAdminDashboard() {
@@ -73,8 +73,8 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchPrayerTimes();
       setPrayerData(data);
-    } catch (error) {
-      console.error("Failed to fetch prayer times:", error);
+    } catch {
+      // console.error("Failed to fetch prayer times:", error);
     }
   };
 
@@ -82,8 +82,8 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchJamaatTimes();
       setJamaatData(data);
-    } catch (error) {
-      console.error("Failed to fetch jamaat times:", error);
+    } catch {
+      // console.error("Failed to fetch jamaat times:", error);
     }
   };
 
@@ -91,8 +91,8 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchEvents();
       setEventsData(data);
-    } catch (error) {
-      console.error("Failed to fetch events:", error);
+    } catch {
+      // console.error("Failed to fetch events:", error);
     }
   };
 
@@ -101,8 +101,8 @@ export default function MosqueAdminDashboard() {
       try {
         const data = await fetchPassword();
         setServerHash(data);
-      } catch (err) {
-        console.error("Failed to fetch password:", err);
+      } catch {
+        // console.error("Failed to fetch password:", err);
       }
   }
 
@@ -136,37 +136,21 @@ export default function MosqueAdminDashboard() {
 
   const saveDataJamaat = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/jamaat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ jamaatData }),
-      });
-
-      await res.json();
+      await saveJamaatTimes(jamaatData);
       alert('Jamaat times saved successfully! Other pages can now access this data.');
-    } catch (error) {
+    } catch {
       alert('Failed to save data');
-      console.error("Error saving Jamaat times:", error);
+      // console.error("Error saving Jamaat times:", error);
     }
   };
 
   const saveDataEvents = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ eventsData }),
-      });
-
-      await res.json();
+      await saveEvents(eventsData);
       alert('Events saved successfully! Other pages can now access this data.');
-    } catch (error) {
+    } catch {
       alert('Failed to save data');
-      console.error("Error saving Events:", error);
+      // console.error("Error saving Events:", error);
     }
   };
 
@@ -296,45 +280,26 @@ export default function MosqueAdminDashboard() {
 
   const deleteEntry = async (index) =>  {
     if (confirm('Delete this entry?')) {
-      // const newTimes = prayerData.filter((_, i) => i !== index);
-      // setPrayerData({ ...prayerData,  newTimes });
       
       try{
-        const response = await fetch(`http://localhost:4000/api/prayer_times/${index}`, {
-          method: "DELETE",
+        await deletePrayer(index);
+        setPrayerData(prev => {
+          const updated = { ...prev };
+          delete updated[index];
+          return updated;
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          // handle error (400, 404, 500, etc.)
-          console.error("Error:", data.error);
-          if(data.error.includes("no record found")){
-            setPrayerData(prev => {
-              const updated = { ...prev };
-              delete updated[index]; // your key here
-              return updated;
-            });
-          }
-          else{
-            alert(`Error (${response.status}): ${data.error}`);
-          }
-          return;
-        }
-        else{
+      } catch (err) {
+        if(String(err).includes("This entry does not exist in Database")){
           setPrayerData(prev => {
             const updated = { ...prev };
-            delete updated[index]; // your key here
+            delete updated[index]; 
             return updated;
           });
         }
-      } catch (err) {
-        console.error("Network or JSON error:", err);
-        alert("Failed to connect to server.");
+        // console.error("Network or JSON error:", err);
+        alert(err);
       }
     }
-    
-    
   };
 
   const duplicateEntry = (index) => {
@@ -401,41 +366,24 @@ export default function MosqueAdminDashboard() {
   const deleteEntryJamaat = async (index) =>  {
     if (confirm('Delete this entry?')) {
       try{
-        const response = await fetch(`http://localhost:4000/api/jamaat/${index}`, {
-          method: "DELETE",
+        await deleteJamaat(index);
+        setJamaatData(prev => {
+          const updated = { ...prev };
+          delete updated[index];
+          return updated;
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.error("Error:", data.error);
-          if((data.error).includes("nothing to delete")){
-            setJamaatData(prev => {
-              const updated = { ...prev };
-              delete updated[index]; // your key here
-              return updated;
-            });
-          }
-          else{
-            alert(`Error (${response.status}): ${data.error}`);
-          }
-          return;
-      
-        }
-        else{
+      } catch (err){
+        if(String(err).includes("This entry does not exist in Database")){
           setJamaatData(prev => {
             const updated = { ...prev };
-            delete updated[index]; // your key here
+            delete updated[index]; 
             return updated;
           });
         }
-      } catch (err) {
-        console.error("Network or JSON error:", err);
-        alert("Failed to connect to server.");
+        // console.error("Network or JSON error:", err);
+        alert(err);
       }
     }
-    
-    
   };
 
   const duplicateEntryJamaat = (index) => {
@@ -504,38 +452,23 @@ export default function MosqueAdminDashboard() {
     if (confirm('Delete this entry?')) {
       
       try{
-        const response = await fetch(`http://localhost:4000/api/events/${index}`, {
-          method: "DELETE",
+        await deleteEvent(index);
+
+        setEventsData(prev => {
+          const updated = { ...prev };
+          delete updated[index]; 
+          return updated;
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          // handle error (400, 404, 500, etc.)
-          console.error("Error:", data.error);
-          if((data.error).includes("nothing to delete")){
-            setEventsData(prev => {
-              const updated = { ...prev };
-              delete updated[index]; // your key here
-              return updated;
-            });
-          }
-          else{
-            alert(`Error (${response.status}): ${data.error}`);
-          }
-          return;
-      
-        }
-        else{
+      } catch (err) {
+        if(String(err).includes("This entry does not exist in Database")){
           setEventsData(prev => {
             const updated = { ...prev };
-            delete updated[index]; // your key here
+            delete updated[index]; 
             return updated;
           });
         }
-      } catch (err) {
-        console.error("Network or JSON error:", err);
-        alert("Failed to connect to server.");
+        // console.error("Network or JSON error:", err);
+        alert(err);
       }
     }
     
@@ -666,19 +599,12 @@ export default function MosqueAdminDashboard() {
               setFormErrors = {setJamaatFormErrors}/>
           )}
           <JamaatDisplayWidget eventsData={eventsData}
-            saveDataJamaat={saveDataJamaat}
-            addNewEntryJamaat={addNewEntryJamaat}
-            editingIndexJamaat={editingIndexJamaat}
-            setEditingIndexJamaat={setEditingIndexJamaat}
-            editFormJamaat={editFormJamaat}
-            setEditFormJamaat={setEditFormJamaat}
-            saveEntryJamaat={saveEntryJamaat}
             jamaatName={jamaatName}
             setJamaatName={setJamaatName}
-            filteredTimesJamaat={filteredTimesJamaat}
-            editEntryJamaat={editEntryJamaat}
-            duplicateEntryJamaat={duplicateEntryJamaat}
-            deleteEntryJamaat={deleteEntryJamaat}/>
+            filteredTimes={filteredTimesJamaat}
+            editEntry={editEntryJamaat}
+            duplicateEntry={duplicateEntryJamaat}
+            deleteEntry={deleteEntryJamaat}/>
         </div>
       )}
       {activeTab === 'events' && (
