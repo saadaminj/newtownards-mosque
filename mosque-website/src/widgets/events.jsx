@@ -17,9 +17,9 @@ const EventsWidget = ({ eventsData }) => {
                 <div key={events} className="bg-gradient-to-r from-emerald-50 to-white p-6 rounded-lg border-l-4 border-emerald-600 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-xl font-bold text-emerald-800">{events}</h3>
-                    <span className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    {value.time && (<span className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                       {value.time}
-                    </span>
+                    </span>)}
                   </div>
                   <p className="text-gray-600 font-semibold">{value.description}</p>
                 </div>

@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Upload, Calendar, Download, Plus, Edit2, Save, X, Search, Trash2, Copy, Lock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Edit2, X, Search, Trash2, Copy, Lock } from 'lucide-react';
 import bcrypt from "bcryptjs";
-import { JamaatAdmin } from './widgets/admin/jamaat_admin';
+import { JamaatDisplayWidget } from './widgets/admin/jamaat_display_widget';
+import { JamaatEditingWidget } from './widgets/admin/jamaat_editing_widget';
 import { AdminHeader } from './widgets/admin/header';
-
-let MONTH = "";
-let YEAR = "";
+import { PrayerEditingWidget } from './widgets/admin/prayer_editing_widget';
+import { EventsEditingWidget } from './widgets/admin/events_editing_widget';
+import { PrayerDisplayWidget } from './widgets/admin/prayer_display_widget';
+import { EventsDisplayWidget } from './widgets/admin/events_display_widget';
+import { Login } from './widgets/admin/login';
 
 export default function MosqueAdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -21,6 +24,9 @@ export default function MosqueAdminDashboard() {
   const [searchDate, setSearchDate] = useState('');
   const [jamaatName, setJamaatName] = useState('');
   const [searchEventName, setSearchEventName] = useState('');
+  const [eventsFormErrors, setEventsFormErrors] = useState('');
+  const [jamaatFormErrors, setJamaatFormErrors] = useState('');
+  const [prayerFormErrors, setPrayerFormErrors] = useState('');
   const [editForm, setEditForm] = useState({
     date: '',
     fajr: '',
@@ -30,6 +36,10 @@ export default function MosqueAdminDashboard() {
     maghrib: '',
     isha: ''
   });
+
+  const TEXT_REGEX = /^[a-zA-Z0-9 ]*$/;
+  const TIME_REGEX = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+  const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
   
   const [editingIndexJamaat, setEditingIndexJamaat] = useState(null);
   const [editFormJamaat, setEditFormJamaat] = useState({
@@ -222,6 +232,7 @@ export default function MosqueAdminDashboard() {
   };
 
   const importInputJSON = () => {
+    let number = 0;
     if (inputJSON.length === 0) return;
     try {
       const imported = JSON.parse(inputJSON);
@@ -229,15 +240,27 @@ export default function MosqueAdminDashboard() {
       const newPrayerData = { ...prayerData };
 
       for (const [date, newTimes] of Object.entries(imported)) {
-      newPrayerData[date] = {
-        ...(newPrayerData[date] || {}),
-        ...newTimes,
-      };
+
+        if (!DATE_REGEX.test(date)){
+          number += 1;
+          continue;
+        }
+        if (!TIME_REGEX.test(newTimes.fajr) || !TIME_REGEX.test(newTimes.sunrise) || !TIME_REGEX.test(newTimes.dhuhr) 
+          || !TIME_REGEX.test(newTimes.asr) || !TIME_REGEX.test(newTimes.isha)){
+          number += 1;
+          continue;
+        }
+        newPrayerData[date] = {
+          ...(newPrayerData[date] || {}),
+          ...newTimes,
+        };
     }
       setPrayerData(newPrayerData);
       setInputJSON("");
-
-      alert('Data imported successfully!');
+      if(number > 0){
+        alert("Some rows can't be inserted due to validation errors: "+number);
+      }
+      else alert('Data imported successfully!');
     } catch (error) {
       alert('Invalid JSON input',error);
     }
@@ -274,6 +297,16 @@ export default function MosqueAdminDashboard() {
   const saveEntry = () => {
     if (!editForm.date) {
       alert('Date is required');
+      return;
+    }
+    
+    if (!DATE_REGEX.test(editForm.date)) {
+      setPrayerFormErrors("Please enter a valid date");
+      return;
+    }
+    else if (!TIME_REGEX.test(editForm.fajr) || !TIME_REGEX.test(editForm.sunrise) || !TIME_REGEX.test(editForm.dhuhr) 
+      || !TIME_REGEX.test(editForm.asr) || !TIME_REGEX.test(editForm.isha)) {
+      setJamaatFormErrors("Time can only contain numbers");
       return;
     }
 
@@ -349,14 +382,6 @@ export default function MosqueAdminDashboard() {
     setEditForm(entry);
   };
 
-
-
-
-
-
-// JAMAAT
-
-
   const addNewEntryJamaat = () => {
     setEditingIndexJamaat(-1);
     setEditFormJamaat({
@@ -373,6 +398,15 @@ export default function MosqueAdminDashboard() {
   const saveEntryJamaat = () => {
     if (!editFormJamaat || !editFormJamaat.name || editFormJamaat.name.trim().length === 0) {
       alert("Name is required");
+      return;
+    }
+
+    if (!TEXT_REGEX.test(editFormJamaat.name)) {
+      setJamaatFormErrors("Jamaat name can contain only letters, numbers, and spaces.");
+      return;
+    }
+    else if (!TIME_REGEX.test(editFormJamaat.time)) {
+      setJamaatFormErrors("Jamaat time can not be empty and must contain only numbers");
       return;
     }
 
@@ -397,19 +431,14 @@ export default function MosqueAdminDashboard() {
     setEditingIndexJamaat(null);
   };
 
-      // helper to turn "03:45 pm" into minutes since midnight
-  // sort entries, then rebuild object
-    function toMinutes24(t) {
-      if (!t) return Number.POSITIVE_INFINITY;
-      const [h, m] = t.split(":").map(Number);
-      return h * 60 + m;
-    }
+  function toMinutes24(t) {
+    if (!t) return Number.POSITIVE_INFINITY;
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  }
 
   const deleteEntryJamaat = async (index) =>  {
     if (confirm('Delete this entry?')) {
-      // const newTimes = prayerData.filter((_, i) => i !== index);
-      // setPrayerData({ ...prayerData,  newTimes });
-      
       try{
         const response = await fetch(`http://localhost:4000/api/jamaat/${index}`, {
           method: "DELETE",
@@ -418,7 +447,6 @@ export default function MosqueAdminDashboard() {
         const data = await response.json();
 
         if (!response.ok) {
-          // handle error (400, 404, 500, etc.)
           console.error("Error:", data.error);
           if((data.error).includes("nothing to delete")){
             setJamaatData(prev => {
@@ -454,12 +482,6 @@ export default function MosqueAdminDashboard() {
     setEditFormJamaat({name:index,...jamaatData[index]});
   };
 
-
-
-  //Events
-
-
-
   const addNewEntryEvents = () => {
     setEditingIndexEvents(-1);
     setEditFormEvents({
@@ -477,6 +499,19 @@ export default function MosqueAdminDashboard() {
   const saveEntryEvents = () => {
     if (!editFormEvents || !editFormEvents.name || editFormEvents.name.trim().length === 0) {
       alert("Name is required");
+      return;
+    }
+
+    if (!TEXT_REGEX.test(editFormEvents.name)) {
+      setEventsFormErrors("Event name can contain only letters, numbers, and spaces.");
+      return;
+    }
+    else if (!TEXT_REGEX.test(editFormEvents.description)) {
+      setEventsFormErrors("Event description can contain only letters, numbers, and spaces.");
+      return;
+    }
+    else if (editFormEvents.time && !TIME_REGEX.test(editFormEvents.time)) {
+      setEventsFormErrors("Event time can contain only letters, numbers, and spaces.");
       return;
     }
 
@@ -506,8 +541,6 @@ export default function MosqueAdminDashboard() {
 
   const deleteEntryEvents = async (index) =>  {
     if (confirm('Delete this entry?')) {
-      // const newTimes = prayerData.filter((_, i) => i !== index);
-      // setPrayerData({ ...prayerData,  newTimes });
       
       try{
         const response = await fetch(`http://localhost:4000/api/events/${index}`, {
@@ -553,31 +586,6 @@ export default function MosqueAdminDashboard() {
     setEditFormEvents({name:index,...eventsData[index]});
   };
 
-  // const generateYearTemplate = () => {
-  //   const year = prayerData.year;
-  //   const days = [];
-  //   for (let month = 0; month < 12; month++) {
-  //     const daysInMonth = new Date(year, month + 1, 0).getDate();
-  //     for (let day = 1; day <= daysInMonth; day++) {
-  //       const date = new Date(year, month, day);
-  //       days.push({
-  //         date: date.toISOString().split('T')[0],
-  //         fajr: '05:00',
-  //         sunrise: '06:30',
-  //         dhuhr: '12:00',
-  //         asr: '15:30',
-  //         maghrib: '18:00',
-  //         isha: '19:30'
-  //       });
-  //     }
-  //   }
-  //   setPrayerData({ ...prayerData, days });
-  // };
-
-  // const filteredTimes = prayerData.filter(pt =>
-  //   !searchDate || pt.includes(searchDate)
-  // );
-
   let filteredTimes = prayerData ? Object.entries(prayerData) : [];
 
   filteredTimes = filteredTimes
@@ -621,46 +629,16 @@ export default function MosqueAdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-          <div className="flex items-center gap-3 mb-6">
-            <Lock className="w-8 h-8 text-emerald-600" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Admin Access</h1>
-              <p className="text-gray-500 text-sm">Enter the admin password to continue</p>
-            </div>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            {passwordError && (
-              <p className="text-red-600 text-sm">{passwordError}</p>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700"
-            >
-              Unlock Dashboard
-            </button>
-          </form>
-        </div>
-      </div>
-    );
+      <Login 
+        handleLogin = {handleLogin} 
+        passwordInput = {passwordInput}
+        setPasswordInput = {setPasswordInput}
+        passwordError= {passwordError}/>
+      );
   }
 
   // If authenticated, render the full dashboard
   return (
-
-    
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-8">
       <nav className=" max-w-7xl mx-auto bg-white shadow-md sticky top-0 z-10 mb-4 rounded-2xl">
         <div className="container mx-auto px-4">
@@ -696,162 +674,37 @@ export default function MosqueAdminDashboard() {
         />
 
         {editingIndex !== null && (
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();   // stop browser submit
-              saveEntry();          // do your React save (which may close modal)
-            }}>
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {editingIndex === -1 ? 'Add New Entry' : 'Edit Entry'}
-                  </h2>
-                  <button
-                    type="button" 
-                    onClick={() => setEditingIndex(null)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-                    <input
-                      type="date"
-                      value={editForm.date}
-                      onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  {['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].map(prayer => (
-                    <div key={prayer}>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                        {prayer}
-                      </label>
-                      <input
-                        type="time"
-                        value={editForm[prayer]}
-                        onChange={(e) => setEditForm({ ...editForm, [prayer]: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    type="submit"
-                    // onClick={saveEntry}
-                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
-                  >
-                    Save Entry
-                  </button>
-                  <button
-                    type="button" 
-                    onClick={() => setEditingIndex(null)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
+          <PrayerEditingWidget 
+          saveEntry = {saveEntry} 
+          editingIndex = {editingIndex}
+          setEditingIndex = {setEditingIndex} 
+          editForm = {editForm} 
+          setEditForm = {setEditForm}
+          formErrors = {prayerFormErrors}
+          setFormErrors = {setPrayerFormErrors}/>
         )}
-
-        {/* Prayer Times Table */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Prayer Times</h2>
-            <div className="flex items-center gap-3">
-              <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
-              <input
-                type="text"
-                placeholder="Search date (YYYY-MM-DD)"
-                value={searchDate}
-                onChange={(e) => setSearchDate(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Date</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Fajr</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Sunrise</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Dhuhr</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Asr</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Maghrib</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Isha</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTimes.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
-                      No entries yet. Click "Add Entry" or "Generate Year Template" to get started.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTimes.map((day) => {
-                    const dateKey = day.date; // this is like "2024-04-01"
-
-                    return (
-                      <tr key={dateKey} className="border-t border-gray-200 hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-800">{day.date}</td>
-                        <td className="px-4 py-3 text-gray-600">{day.fajr || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{day.sunrise || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{day.dhuhr || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{day.asr || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{day.maghrib || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{day.isha || '-'}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => editEntry(dateKey)}
-                              className="text-blue-600 hover:text-blue-800"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => duplicateEntry(dateKey)}
-                              className="text-green-600 hover:text-green-800"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => deleteEntry(dateKey)}
-                              className="text-red-600 hover:text-red-800"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <PrayerDisplayWidget 
+          searchDate={searchDate}
+          setSearchDate={setSearchDate}
+          filteredTimes = {filteredTimes} 
+          editEntry = {editEntry}
+          duplicateEntry = {duplicateEntry} 
+          deleteEntry = {deleteEntry}/>
       </div>)}
       {activeTab === 'jamaat' && (
         <div>
           <AdminHeader saveData={saveDataJamaat} addNewEntry={addNewEntryJamaat}/>
-          <JamaatAdmin eventsData={eventsData}
+          {editingIndexJamaat !== null && (
+            <JamaatEditingWidget
+              saveEntry = {saveEntryJamaat} 
+              editingIndex = {editingIndexJamaat}
+              setEditingIndex = {setEditingIndexJamaat} 
+              editForm = {editFormJamaat} 
+              setEditForm = {setEditFormJamaat}
+              formErrors = {jamaatFormErrors}
+              setFormErrors = {setJamaatFormErrors}/>
+          )}
+          <JamaatDisplayWidget eventsData={eventsData}
             saveDataJamaat={saveDataJamaat}
             addNewEntryJamaat={addNewEntryJamaat}
             editingIndexJamaat={editingIndexJamaat}
@@ -871,156 +724,22 @@ export default function MosqueAdminDashboard() {
         <div className="max-w-7xl mx-auto">
         <AdminHeader saveData={saveDataEvents} addNewEntry={addNewEntryEvents}/>
         {editingIndexEvents !== null && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();   // stop browser submit
-              saveEntryEvents();          // do your React save (which may close modal)
-            }}>
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {editingIndexEvents === -1 ? 'Add New Entry' : 'Edit Entry'}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => setEditingIndexEvents(null)}
-                    className="text-gray-500 hover:text-gray-700">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Event Name *</label>
-                    <input
-                      type="text"
-                      value={editFormEvents.name}
-                      onChange={(e) => setEditFormEvents({ ...editFormEvents, name: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                    <div key="Description">
-                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                        Description
-                      </label>
-                      <input
-                        type="text"
-                        value={editFormEvents.description}
-                        onChange={(e) => setEditFormEvents({ ...editFormEvents, description: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-
-                    <div key="Time">
-                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                        Time
-                      </label>
-                      <input
-                        type="time"
-                        value={editFormEvents.time}
-                        onChange={(e) => setEditFormEvents({ ...editFormEvents, time: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    type="submit"
-                    // onClick={saveEntryJamaat}
-                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700"
-                  >
-                    Save Entry
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingIndexEvents(null)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
+          <EventsEditingWidget 
+          saveEntry = {saveEntryEvents} 
+          editingIndex = {editingIndexEvents}
+          setEditingIndex = {setEditingIndexEvents} 
+          editForm = {editFormEvents} 
+          setEditForm = {setEditFormEvents}
+          formErrors={eventsFormErrors}
+          setFormErrors = {setEventsFormErrors}/>
         )}
-
-        {/* Prayer Times Table */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Events</h2>
-            <div className="flex items-center gap-3">
-              <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
-              <input
-                type="text"
-                placeholder="Search name"
-                value={searchEventName}
-                onChange={(e) => setSearchEventName(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Event</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Description</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Time</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTimesEvents.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
-                      No entries yet. Click "Add Entry" to get started.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTimesEvents.map((event) => {
-                    const eventName = event.name; 
-                    return (
-                      <tr key={eventName} className="border-t border-gray-200 hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-800">{event.name}</td>
-                        <td className="px-4 py-3 font-medium text-gray-800">{event.description}</td>
-                        <td className="px-4 py-3 text-gray-600">{event.time || '-'}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => editEntryEvents(eventName)}
-                              className="text-blue-600 hover:text-blue-800"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => duplicateEntryEvents(eventName)}
-                              className="text-green-600 hover:text-green-800"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => deleteEntryEvents(eventName)}
-                              className="text-red-600 hover:text-red-800"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <EventsDisplayWidget 
+            searchEventName = {searchEventName}
+            setSearchEventName = {setSearchEventName}
+            filteredTimes = {filteredTimesEvents} 
+            editEntry = {editEntryEvents}
+            duplicateEntry = {duplicateEntryEvents} 
+            deleteEntry = {deleteEntryEvents}/>
       </div>
       )}
     </div>
