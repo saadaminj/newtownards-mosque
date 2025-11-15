@@ -24,14 +24,14 @@ export default function MosqueAdminDashboard() {
   const [prayerData, setPrayerData] = useState([]);
   const [jamaatData, setJamaatData] = useState([]);
   const [eventsData, setEventsData] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [prayerEditingIndex, setPrayerEditingIndex] = useState(null);
   const [searchDate, setSearchDate] = useState('');
   const [jamaatName, setJamaatName] = useState('');
   const [searchEventName, setSearchEventName] = useState('');
   const [eventsFormErrors, setEventsFormErrors] = useState('');
   const [jamaatFormErrors, setJamaatFormErrors] = useState('');
   const [prayerFormErrors, setPrayerFormErrors] = useState('');
-  const [editForm, setEditForm] = useState({
+  const [editFormPrayers, setEditFormPrayers] = useState({
     date: '',
     fajr: '',
     sunrise: '',
@@ -233,8 +233,8 @@ export default function MosqueAdminDashboard() {
   };
 
   const addNewEntry = () => {
-    setEditingIndex(-1);
-    setEditForm({
+    setPrayerEditingIndex(-1);
+    setEditFormPrayers({
       date: '',
       fajr: '',
       sunrise: '',
@@ -246,26 +246,26 @@ export default function MosqueAdminDashboard() {
   };
 
   const editEntry = (index) => {
-    setEditingIndex(index);
-    setEditForm({date:index,...prayerData[index]});
+    setPrayerEditingIndex(index);
+    setEditFormPrayers({date:index,...prayerData[index]});
   };
 
   const saveEntry = () => {
-    if (!editForm.date) {
+    if (!editFormPrayers.date) {
       alert('Date is required');
       return;
     }
     
-    if (!DATE_REGEX.test(editForm.date)) {
+    if (!DATE_REGEX.test(editFormPrayers.date)) {
       setPrayerFormErrors("Please enter a valid date");
       return;
     }
     else if (
-      (editForm.fajr && !TIME_REGEX.test(editForm.fajr)) ||
-      (editForm.sunrise && !TIME_REGEX.test(editForm.sunrise)) ||
-      (editForm.dhuhr && !TIME_REGEX.test(editForm.dhuhr)) ||
-      (editForm.asr && !TIME_REGEX.test(editForm.asr)) ||
-      (editForm.isha && !TIME_REGEX.test(editForm.isha))
+      (editFormPrayers.fajr && !TIME_REGEX.test(editFormPrayers.fajr)) ||
+      (editFormPrayers.sunrise && !TIME_REGEX.test(editFormPrayers.sunrise)) ||
+      (editFormPrayers.dhuhr && !TIME_REGEX.test(editFormPrayers.dhuhr)) ||
+      (editFormPrayers.asr && !TIME_REGEX.test(editFormPrayers.asr)) ||
+      (editFormPrayers.isha && !TIME_REGEX.test(editFormPrayers.isha))
     ) {
       setPrayerFormErrors("Time can only contain numbers");
       return;
@@ -273,13 +273,13 @@ export default function MosqueAdminDashboard() {
 
     let newTimes = {...prayerData};
 
-    newTimes[editForm.date] = {
-      fajr: editForm.fajr,
-      sunrise: editForm.sunrise,
-      dhuhr: editForm.dhuhr,
-      asr: editForm.asr,
-      maghrib: editForm.maghrib,
-      isha: editForm.isha
+    newTimes[editFormPrayers.date] = {
+      fajr: editFormPrayers.fajr,
+      sunrise: editFormPrayers.sunrise,
+      dhuhr: editFormPrayers.dhuhr,
+      asr: editFormPrayers.asr,
+      maghrib: editFormPrayers.maghrib,
+      isha: editFormPrayers.isha
     };
 
     // sort entries, then build a NEW object in order
@@ -291,7 +291,7 @@ export default function MosqueAdminDashboard() {
       }, {});
 
     setPrayerData(newTimes);
-    setEditingIndex(null);
+    setPrayerEditingIndex(null);
   };
 
   const deleteEntry = async (index) =>  {
@@ -339,8 +339,8 @@ export default function MosqueAdminDashboard() {
 
   const duplicateEntry = (index) => {
     const entry = { ...prayerData[index] };
-    setEditingIndex(-1);
-    setEditForm(entry);
+    setPrayerEditingIndex(-1);
+    setEditFormPrayers(entry);
   };
 
   const addNewEntryJamaat = () => {
@@ -634,13 +634,13 @@ export default function MosqueAdminDashboard() {
           setInputJSON={setInputJSON}
         />
 
-        {editingIndex !== null && (
+        {prayerEditingIndex !== null && (
           <PrayerEditingWidget 
           saveEntry = {saveEntry} 
-          editingIndex = {editingIndex}
-          setEditingIndex = {setEditingIndex} 
-          editForm = {editForm} 
-          setEditForm = {setEditForm}
+          editingIndex = {prayerEditingIndex}
+          setEditingIndex = {setPrayerEditingIndex} 
+          editForm = {editFormPrayers} 
+          setEditForm = {setEditFormPrayers}
           formErrors = {prayerFormErrors}
           setFormErrors = {setPrayerFormErrors}/>
         )}
