@@ -9,6 +9,10 @@ import { EventsEditingWidget } from './widgets/admin/events_editing_widget';
 import { PrayerDisplayWidget } from './widgets/admin/prayer_display_widget';
 import { EventsDisplayWidget } from './widgets/admin/events_display_widget';
 import { Login } from './widgets/admin/login';
+import { fetchEvents } from './services/eventService';
+import { fetchJamaatTimes } from './services/jamaatService';
+import { fetchPrayerTimes, savePrayerTimes } from './services/prayerService';
+import { fetchPassword } from './services/passwordService';
 
 export default function MosqueAdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -56,8 +60,7 @@ export default function MosqueAdminDashboard() {
 
 
   useEffect(() => {
-    // call it here
-    fetchPassword();
+    getPassword();
   }, []); 
 
   const loadData = async () => {
@@ -68,23 +71,8 @@ export default function MosqueAdminDashboard() {
 
   const loadDataPrayerTimes = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/prayer_times");
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-
-      const byDate = data.reduce((acc, row) => {
-        acc[row.date] = {
-          fajr: row.fajr,
-          sunrise: row.sunrise,
-          dhuhr: row.dhuhr,
-          asr: row.asr,
-          maghrib: row.maghrib,
-          isha: row.isha,
-        };
-        return acc;
-      }, {});
-
-      setPrayerData(byDate);
+      const data = await fetchPrayerTimes();
+      setPrayerData(data);
     } catch (error) {
       console.error("Failed to fetch prayer times:", error);
     }
@@ -92,18 +80,8 @@ export default function MosqueAdminDashboard() {
 
   const loadDataJamaat = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/jamaat");
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-
-      const byName = data.reduce((acc, row) => {
-        acc[row.name] = {
-          time: row.time,
-        };
-        return acc;
-      }, {});
-
-      setJamaatData(byName);
+      const data = await fetchJamaatTimes();
+      setJamaatData(data);
     } catch (error) {
       console.error("Failed to fetch jamaat times:", error);
     }
@@ -111,31 +89,18 @@ export default function MosqueAdminDashboard() {
 
   const loadDataEvents = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/events");
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-
-      const byName = data.reduce((acc, row) => {
-        acc[row.name] = {
-          description: row.description,
-          time: row.time,
-        };
-        return acc;
-      }, {});
-
-      setEventsData(byName);
+      const data = await fetchEvents();
+      setEventsData(data);
     } catch (error) {
       console.error("Failed to fetch events:", error);
     }
   };
 
   
-  async function fetchPassword() {
+  async function getPassword() {
       try {
-        const res = await fetch("http://localhost:4000/api/password");
-        if (!res.ok) throw new Error("Network response was not ok");
-        const data = await res.json();
-        setServerHash(data.passtext);
+        const data = await fetchPassword();
+        setServerHash(data);
       } catch (err) {
         console.error("Failed to fetch password:", err);
       }
@@ -145,7 +110,7 @@ export default function MosqueAdminDashboard() {
     e.preventDefault();
 
     if(serverHash === null){
-      fetchPassword();
+      getPassword();
     }
 
     const isMatch = await bcrypt.compare(passwordInput, serverHash);
@@ -162,19 +127,10 @@ export default function MosqueAdminDashboard() {
 
   const saveData = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/prayer_times", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prayerData }),
-      });
-
-      await res.json();
+      await savePrayerTimes(prayerData);
       alert('Prayer times saved successfully! Other pages can now access this data.');
     } catch (error) {
-      alert('Failed to save data');
-      console.error("Error saving prayer times:", error);
+      alert(error);
     }
   };
 
@@ -304,9 +260,14 @@ export default function MosqueAdminDashboard() {
       setPrayerFormErrors("Please enter a valid date");
       return;
     }
-    else if (!TIME_REGEX.test(editForm.fajr) || !TIME_REGEX.test(editForm.sunrise) || !TIME_REGEX.test(editForm.dhuhr) 
-      || !TIME_REGEX.test(editForm.asr) || !TIME_REGEX.test(editForm.isha)) {
-      setJamaatFormErrors("Time can only contain numbers");
+    else if (
+      (editForm.fajr && !TIME_REGEX.test(editForm.fajr)) ||
+      (editForm.sunrise && !TIME_REGEX.test(editForm.sunrise)) ||
+      (editForm.dhuhr && !TIME_REGEX.test(editForm.dhuhr)) ||
+      (editForm.asr && !TIME_REGEX.test(editForm.asr)) ||
+      (editForm.isha && !TIME_REGEX.test(editForm.isha))
+    ) {
+      setPrayerFormErrors("Time can only contain numbers");
       return;
     }
 
