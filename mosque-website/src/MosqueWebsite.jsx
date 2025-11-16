@@ -43,7 +43,7 @@ export default function MosqueWebsite() {
       const data = await fetchPrayerTimes();
       setPrayerData(data);
     } catch {
-      console.error("Failed to fetch prayer times:");
+      // console.error("Failed to fetch prayer times:");
     }
   };
 
@@ -52,7 +52,7 @@ export default function MosqueWebsite() {
       const data = await fetchJamaatTimes();
       setJamaatData(data);
     } catch {
-      console.error("Failed to fetch jamaat times:");
+      // console.error("Failed to fetch jamaat times:");
     }
   };
 
@@ -61,7 +61,7 @@ export default function MosqueWebsite() {
       const data = await fetchEvents();
       setEventsData(data);
     } catch {
-      console.error("Failed to fetch events:");
+      // console.error("Failed to fetch events:");
     }
   };
 

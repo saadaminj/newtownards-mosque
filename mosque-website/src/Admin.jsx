@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Edit2, X, Search, Trash2, Copy, Lock } from 'lucide-react';
-import bcrypt from "bcryptjs";
 import { JamaatDisplayWidget } from './widgets/admin/jamaat_display_widget';
 import { JamaatEditingWidget } from './widgets/admin/jamaat_editing_widget';
 import { AdminHeader } from './widgets/admin/header';
@@ -8,17 +6,16 @@ import { PrayerEditingWidget } from './widgets/admin/prayer_editing_widget';
 import { EventsEditingWidget } from './widgets/admin/events_editing_widget';
 import { PrayerDisplayWidget } from './widgets/admin/prayer_display_widget';
 import { EventsDisplayWidget } from './widgets/admin/events_display_widget';
-import { Login } from './widgets/admin/login';
+import { LoginWidget } from './widgets/admin/login';
 import { fetchPrayerTimes, savePrayerTimes, deletePrayer } from './services/prayerService';
 import { deleteJamaat, fetchJamaatTimes, saveJamaatTimes } from './services/jamaatService';
 import { deleteEvent, fetchEvents, saveEvents } from './services/eventService';
-import { fetchPassword } from './services/passwordService';
+import { login, logout, me } from './services/passwordService';
 
 export default function MosqueAdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [inputJSON, setInputJSON] = useState("");
   const [activeTab, setActiveTab] = useState('prayers');
-  const [serverHash, setServerHash] = useState(null);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [prayerData, setPrayerData] = useState([]);
@@ -31,6 +28,7 @@ export default function MosqueAdminDashboard() {
   const [eventsFormErrors, setEventsFormErrors] = useState('');
   const [jamaatFormErrors, setJamaatFormErrors] = useState('');
   const [prayerFormErrors, setPrayerFormErrors] = useState('');
+  const [showLoading, setShowLoading] = useState(true);
   const [editFormPrayers, setEditFormPrayers] = useState({
     date: '',
     fajr: '',
@@ -58,10 +56,23 @@ export default function MosqueAdminDashboard() {
     time:''
   });
 
+  async function authenticate(){
+    try { 
+      await me(); 
+      setIsAuthenticated(true); 
+      setShowLoading(false); 
+      loadData();
+    } catch { 
+      setIsAuthenticated(false); 
+      setShowLoading(false); 
+    } 
+  }
 
-  useEffect(() => {
-    getPassword();
-  }, []); 
+  useEffect(() => { 
+    if (!isAuthenticated){ 
+      authenticate();
+    } 
+  });
 
   const loadData = async () => {
     loadDataPrayerTimes();
@@ -96,34 +107,33 @@ export default function MosqueAdminDashboard() {
     }
   };
 
-  
-  async function getPassword() {
-      try {
-        const data = await fetchPassword();
-        setServerHash(data);
-      } catch {
-        // console.error("Failed to fetch password:", err);
-      }
+  async function handleLogout() {
+    try {
+      await logout();
+      setIsAuthenticated(false);
+    } catch(err){
+      alert(err);
+    }
   }
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    try{
+      const response = await login({password: passwordInput});
 
-    if(serverHash === null){
-      getPassword();
+      if (response.isMatch) {
+        setIsAuthenticated(true);
+        loadData();
+        setPasswordError('');
+        setPasswordInput('');
+      } else {
+        alert("Wrong Password");
+      }
+    } catch(err) {
+      alert(err);
     }
-
-    const isMatch = await bcrypt.compare(passwordInput, serverHash);
+  }
     
-    if (isMatch) {
-      setIsAuthenticated(true);
-      loadData();
-      setPasswordError('');
-      setPasswordInput('');
-    } else {
-      alert("Wrong Password");
-    }
-  };
 
   const saveData = async () => {
     try {
@@ -446,8 +456,6 @@ export default function MosqueAdminDashboard() {
     setEditingIndexEvents(null);
   };
 
-    
-
   const deleteEntryEvents = async (index) =>  {
     if (confirm('Delete this entry?')) {
       
@@ -471,8 +479,6 @@ export default function MosqueAdminDashboard() {
         alert(err);
       }
     }
-    
-    
   };
 
   const duplicateEntryEvents = (index) => {
@@ -520,39 +526,69 @@ export default function MosqueAdminDashboard() {
       time: value?.time || "",
       description: value?.description || "",
     }));
+  if (showLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
-      <Login 
+      <LoginWidget 
         handleLogin = {handleLogin} 
+        handleLogout = {handleLogout}
         passwordInput = {passwordInput}
         setPasswordInput = {setPasswordInput}
         passwordError= {passwordError}/>
       );
   }
-
-  // If authenticated, render the full dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-8">
-      <nav className=" max-w-7xl mx-auto bg-white shadow-md sticky top-0 z-10 mb-4 rounded-2xl">
+      <nav className="max-w-7xl mx-auto bg-white shadow-md sticky top-0 z-10 mb-4 rounded-2xl">
         <div className="container mx-auto px-4">
-          <div className="flex justify-center space-x-2 py-4 flex-wrap">
-            {[ 'prayers','jamaat', 'events'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  activeTab === tab
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-emerald-100'
-                }`}
+          <div className="flex items-center justify-between py-4">
+            <div className="flex-1 flex justify-center space-x-2 flex-wrap">
+              {['prayers', 'jamaat', 'events'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                    activeTab === tab
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-emerald-100'
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="ml-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition-all"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="1.8"
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3-3m0 0l3 3m-3-3v12"
+                />
+              </svg>
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </nav>
+
       {activeTab === 'prayers' && (
         <div className="max-w-7xl mx-auto">
         

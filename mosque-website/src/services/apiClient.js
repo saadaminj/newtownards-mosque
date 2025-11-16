@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // services/apiClient.js
 
 const API_BASE_URL =
@@ -14,7 +15,7 @@ export async function apiGet(path) {
             headers: {
                 "Accept": "application/json",
             },
-            credentials: "same-origin"
+            credentials: "include"
         });
 
         if (!res.ok) {
@@ -27,7 +28,8 @@ export async function apiGet(path) {
         } catch {
             throw new Error("Invalid JSON response from server");
         }
-    }catch{
+    } catch (err){
+        // console.error("apiPost error:", err);
         throw new Error("Sorry, something went wrong. We are looking into it.")
     }
 }
@@ -42,7 +44,7 @@ export async function apiPost(path, body) {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      credentials: "same-origin",
+      credentials: "include",
       body: JSON.stringify(body ?? {}),
     });
 
@@ -60,7 +62,7 @@ export async function apiPost(path, body) {
     } catch {
       throw new Error("Invalid JSON response from server");
     }
-  } catch {
+  } catch(err) {
     // console.error("apiPost error:", err);
     throw new Error("Sorry, something went wrong. We are looking into it.");
   }
@@ -76,7 +78,7 @@ export async function apiDelete(path, body) {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      credentials: "same-origin",
+      credentials: "include",
       // Only send body if provided (some DELETE endpoints don't expect a body)
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });

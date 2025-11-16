@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react';
-export const Login = ({handleLogin, passwordInput, setPasswordInput, passwordError}) => {
+export const LoginWidget = ({handleLogin, passwordInput, setPasswordInput, passwordError}) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
