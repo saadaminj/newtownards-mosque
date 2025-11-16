@@ -139,5 +139,4 @@ const PrayerTimesWidget = ({ prayerData }) => {
   );
 };
 
-
 export default PrayerTimesWidget;

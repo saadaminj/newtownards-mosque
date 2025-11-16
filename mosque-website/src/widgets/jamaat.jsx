@@ -3,9 +3,29 @@ import { Clock } from "lucide-react";
 const title = "Today's Jamaat Time";
 
 const JamaatTimesWidget = ({ jamaatData }) => {
+
   if (!jamaatData || Object.keys(jamaatData).length === 0) {
-    return null; 
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-emerald-50">
+        <div className="flex flex-col items-center gap-4 px-6">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg">
+            <span className="text-4xl"><img
+                src="/mosque_logo.svg"
+                alt="Mosque logo"
+                className=""
+              /></span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-emerald-900 text-center">
+            No Jamaat Timings to display
+          </h2>
+          <p className="text-base md:text-lg text-emerald-700 text-center max-w-xl">
+            {/* Add a new event to see it appear here in your mosque events schedule. */}
+          </p>
+        </div>
+      </div>
+    );
   }
+  
 
   return (
     <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl shadow-lg p-8 text-white">

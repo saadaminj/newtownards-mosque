@@ -118,9 +118,20 @@ export default function MosqueWebsite() {
         {activeTab === 'home' && (
           <div className="space-y-8">
             <WelcomeMosqueWidget/>
-            <JamaatTimesWidget jamaatData={jamaatData} />
-            <PrayerTimesWidget prayerData={prayerData} />
-            <EventsWidget eventsData={eventsData} />
+            {jamaatData &&
+              Object.keys(jamaatData).length > 0 && (
+                <JamaatTimesWidget jamaatData={jamaatData} />
+              )}
+
+            {prayerData &&
+              Object.keys(prayerData).length > 0 && (
+                <PrayerTimesWidget prayerData={prayerData} />
+              )}
+
+            {eventsData &&
+              Object.keys(eventsData).length > 0 && (
+                <EventsWidget eventsData={eventsData} />
+              )}
           </div>
         )}
 
