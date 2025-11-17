@@ -1,0 +1,18 @@
+0000000000000000000000000000000000000000 64cfe814ba1152aa73c7145bf70546dc19c3d0fb Saad Jamal <saadamin30@gmail.com> 1762878272 +0000	clone: from https://github.com/saadaminj/newtownards-mosque.git
+64cfe814ba1152aa73c7145bf70546dc19c3d0fb 84a3c63a006b80dcbb5aef7860132a203045dd6d Saad Jamal <saadamin30@gmail.com> 1762887786 +0000	commit: added jamaat in admin dashboard
+84a3c63a006b80dcbb5aef7860132a203045dd6d 2edba2197489d2f9966ccd02f636cfc35f3b1380 Saad Jamal <saadamin30@gmail.com> 1762889903 +0000	commit: added sorting and enter will submit the form
+2edba2197489d2f9966ccd02f636cfc35f3b1380 e8ebf4874c208903669abc90dd6e13ea65aada6f Saad Jamal <saadamin30@gmail.com> 1762892011 +0000	commit: added events tab in admin panel
+e8ebf4874c208903669abc90dd6e13ea65aada6f eb35dc9217d5ee11bbc0b6a264c3b7bed16b0973 Saad Jamal <saadamin30@gmail.com> 1762995649 +0000	commit: frontend data fetching
+eb35dc9217d5ee11bbc0b6a264c3b7bed16b0973 7ea382b997d0a023b31c0a80c140ca03621e90b3 Saad Jamal <saadamin30@gmail.com> 1763062716 +0000	commit: cleaned the code or mosque
+7ea382b997d0a023b31c0a80c140ca03621e90b3 092273e56da17c9694dfbf077652358a1d5f0fb8 Saad Jamal <saadamin30@gmail.com> 1763063079 +0000	commit: fix console.log database
+092273e56da17c9694dfbf077652358a1d5f0fb8 092273e56da17c9694dfbf077652358a1d5f0fb8 Saad Jamal <saadamin30@gmail.com> 1763130417 +0000	reset: moving to HEAD
+092273e56da17c9694dfbf077652358a1d5f0fb8 4d67b18abbafab95fea4dc1d96e20e66760f36a3 Saad Jamal <saadamin30@gmail.com> 1763136337 +0000	commit: clean admin code
+4d67b18abbafab95fea4dc1d96e20e66760f36a3 fc31aef75e7d5719e1134786554492ca98cc227a Saad Jamal <saadamin30@gmail.com> 1763156959 +0000	commit: remove image upload code
+fc31aef75e7d5719e1134786554492ca98cc227a 5cff05d35a0be4f22a9f493868a1092c12cd139c Saad Jamal <saadamin30@gmail.com> 1763166183 +0000	commit: clean the admin code, added validation errors
+5cff05d35a0be4f22a9f493868a1092c12cd139c 318cad864a305f3da07dc562550fc9744ff7d537 Saad Jamal <saadamin30@gmail.com> 1763168193 +0000	commit: clean the database code for admin
+318cad864a305f3da07dc562550fc9744ff7d537 a8606501d66a629bd03c654d1d6a80135c8dc8b4 Saad Jamal <saadamin30@gmail.com> 1763168380 +0000	commit: fix
+a8606501d66a629bd03c654d1d6a80135c8dc8b4 44d5a1ae577f38294305cafff2b6b80a13547766 Saad Jamal <saadamin30@gmail.com> 1763250484 +0000	commit: fix
+44d5a1ae577f38294305cafff2b6b80a13547766 8bc8d6af7458634c6c0ffb4f5c835f405702e78e Saad Jamal <saadamin30@gmail.com> 1763260551 +0000	commit: made the website secure with jwt tokens
+8bc8d6af7458634c6c0ffb4f5c835f405702e78e 758b92e7cb407db02d64b9f286b5aa2f544bebde Saad Jamal <saadamin30@gmail.com> 1763262680 +0000	commit: change logo
+758b92e7cb407db02d64b9f286b5aa2f544bebde c198418808cd62b4acefd24dd0f862f7facbff74 Saad Jamal <saadamin30@gmail.com> 1763262703 +0000	commit: fix events page when no events
+c198418808cd62b4acefd24dd0f862f7facbff74 694d6a1256a355389c48d17e5492e5f3fe94cdef Saad Jamal <saadamin30@gmail.com> 1763262954 +0000	commit: fix
