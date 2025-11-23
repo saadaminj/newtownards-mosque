@@ -10,6 +10,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5001
+      DOMAIN: http://localhost
     volumes:
       - ./data:/data     # host folder : /data in container
     env_file:

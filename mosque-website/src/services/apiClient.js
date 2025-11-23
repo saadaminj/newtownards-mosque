@@ -1,5 +1,6 @@
-/* eslint-disable no-unused-vars */
 // services/apiClient.js
+
+import { isDev } from "../env";
 
 const API_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) ||
@@ -28,8 +29,8 @@ export async function apiGet(path) {
         } catch {
             throw new Error("Invalid JSON response from server");
         }
-    } catch (err){
-        // console.error("apiPost error:", err);
+    } catch (err){      
+        if(isDev) console.error("apiPost error:", err);
         throw new Error("Sorry, something went wrong. We are looking into it.")
     }
 }
@@ -60,10 +61,11 @@ export async function apiPost(path, body) {
     try {
       return await res.json();
     } catch {
+      if(isDev) console.error("Invalid JSON response from server:");
       throw new Error("Invalid JSON response from server");
     }
   } catch(err) {
-    // console.error("apiPost error:", err);
+    if(isDev) console.error("apiPost error:", err);
     throw new Error("Sorry, something went wrong. We are looking into it.");
   }
 }
@@ -95,11 +97,12 @@ export async function apiDelete(path, body) {
 
     try {
       return await res.json();
-    } catch {
+    } catch (error){
+      if(isDev) console.error(error);
       throw new Error("Invalid JSON response from server");
     }
   } catch (err) {
-    // console.error("apiDelete error:", err);
+    if(isDev) console.error("apiDelete error:", err);
     if(String(err).includes("Not Found")){
       throw new Error("This entry does not exist in Database");
     }

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prod": "npm run build && npm run preview"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

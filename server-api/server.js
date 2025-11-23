@@ -14,10 +14,26 @@ const { fetchJamaat, saveJamaat, deleteJamaat } = require("./controllers/jamaatC
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.FRONTEND_DEV_ORIGIN,   // e.g. http://localhost:5173
+  process.env.FRONTEND_PROD_ORIGIN,  // e.g. https://mosque.example.com
+].filter(Boolean); // remove undefined/empty
+
+
 app.use(
   cors({
-    origin: process.env.REACT_DOMAIN + ":" + process.env.REACT_PORT, // your React dev origin
-    credentials: true,               // allow cookies
+    origin: (origin, callback) => {
+      // Allow non-browser or same-origin requests with no origin (like curl, Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("CORS blocked origin:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
   })
 );
 

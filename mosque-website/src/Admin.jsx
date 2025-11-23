@@ -11,6 +11,7 @@ import { fetchPrayerTimes, savePrayerTimes, deletePrayer } from './services/pray
 import { deleteJamaat, fetchJamaatTimes, saveJamaatTimes } from './services/jamaatService';
 import { deleteEvent, fetchEvents, saveEvents } from './services/eventService';
 import { login, logout, me } from './services/passwordService';
+import { isDev } from './env';
 
 export default function MosqueAdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -62,7 +63,8 @@ export default function MosqueAdminDashboard() {
       setIsAuthenticated(true); 
       setShowLoading(false); 
       loadData();
-    } catch { 
+    } catch (error){
+      if(isDev) console.log(error); 
       setIsAuthenticated(false); 
       setShowLoading(false); 
     } 
@@ -84,8 +86,8 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchPrayerTimes();
       setPrayerData(data);
-    } catch {
-      // console.error("Failed to fetch prayer times:", error);
+    } catch (error) {
+      if(isDev) console.error("Failed to fetch prayer times:", error);
     }
   };
 
@@ -93,8 +95,8 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchJamaatTimes();
       setJamaatData(data);
-    } catch {
-      // console.error("Failed to fetch jamaat times:", error);
+    } catch (error) {
+      if(isDev) console.error("Failed to fetch jamaat times:", error);
     }
   };
 
@@ -102,8 +104,8 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchEvents();
       setEventsData(data);
-    } catch {
-      // console.error("Failed to fetch events:", error);
+    } catch (error) {
+      if(isDev) console.error("Failed to fetch events:", error);
     }
   };
 
@@ -111,8 +113,9 @@ export default function MosqueAdminDashboard() {
     try {
       await logout();
       setIsAuthenticated(false);
-    } catch(err){
-      alert(err);
+    } catch(error){
+      if(isDev) console.log(error);
+      alert(error);
     }
   }
 
@@ -129,8 +132,9 @@ export default function MosqueAdminDashboard() {
       } else {
         alert("Wrong Password");
       }
-    } catch(err) {
-      alert(err);
+    } catch(error){
+      if(isDev) console.log(error);
+      alert(error);
     }
   }
     
@@ -140,6 +144,7 @@ export default function MosqueAdminDashboard() {
       await savePrayerTimes(prayerData);
       alert('Prayer times saved successfully! Other pages can now access this data.');
     } catch (error) {
+      if(isDev) console.log(error);
       alert(error);
     }
   };
@@ -148,9 +153,9 @@ export default function MosqueAdminDashboard() {
     try {
       await saveJamaatTimes(jamaatData);
       alert('Jamaat times saved successfully! Other pages can now access this data.');
-    } catch {
+    } catch (error){
+      if(isDev) console.log(error);
       alert('Failed to save data');
-      // console.error("Error saving Jamaat times:", error);
     }
   };
 
@@ -158,9 +163,9 @@ export default function MosqueAdminDashboard() {
     try {
       await saveEvents(eventsData);
       alert('Events saved successfully! Other pages can now access this data.');
-    } catch {
+    } catch (error){
+      if(isDev) console.log(error);
       alert('Failed to save data');
-      // console.error("Error saving Events:", error);
     }
   };
 
@@ -174,6 +179,7 @@ export default function MosqueAdminDashboard() {
           setPrayerData(imported);
           alert('Data imported successfully!');
         } catch (error) {
+          if(isDev) console.log(error);
           alert('Invalid JSON file',error);
         }
       };
@@ -212,6 +218,7 @@ export default function MosqueAdminDashboard() {
       }
       else alert('Data imported successfully!');
     } catch (error) {
+      if(isDev) console.log(error);
       alert('Invalid JSON input',error);
     }
   };
