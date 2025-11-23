@@ -16,7 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // your React dev origin
+    origin: process.env.REACT_DOMAIN + ":" + process.env.REACT_PORT, // your React dev origin
     credentials: true,               // allow cookies
   })
 );
@@ -40,4 +40,4 @@ app.get('/api/prayer_times', fetchPrayers);
 app.post("/api/prayer_times", authenticate, savePrayers);
 app.delete("/api/prayer_times/:date", authenticate, deletePrayer);
 
-app.listen(4000, () => console.log('API on http://localhost:4000'));
+app.listen(process.env.PORT, () => console.log('API on '+process.env.DOMAIN+":"+process.env.PORT));

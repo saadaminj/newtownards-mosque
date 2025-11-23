@@ -1,8 +1,6 @@
 // db.js
 const Database = require("better-sqlite3");
-const db = new Database("app.db");
-
-
+const db = new Database(process.env.DB_FILE || "data/app.db");
 // create table if not exists
 db.exec(`
   CREATE TABLE IF NOT EXISTS prayer_times (
