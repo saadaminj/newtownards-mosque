@@ -1,5 +1,5 @@
-import { Lock } from 'lucide-react';
-export const LoginWidget = ({handleLogin, passwordInput, setPasswordInput, passwordError}) => {
+import { Lock, Copy } from 'lucide-react';
+export const LoginWidget = ({handleLogin, passwordInput, setPasswordInput, passwordError, newPassword, setNewPassword}) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
@@ -7,30 +7,67 @@ export const LoginWidget = ({handleLogin, passwordInput, setPasswordInput, passw
             <Lock className="w-8 h-8 text-emerald-600" />
             <div>
               <h1 className="text-2xl font-bold text-gray-800">Admin Access</h1>
-              <p className="text-gray-500 text-sm">Enter the admin password to continue</p>
+              {
+                (!newPassword || newPassword.length === 0) ? 
+                (<p className="text-gray-500 text-sm">Enter the admin password to continue</p>):
+                (<p className="text-gray-500 text-sm">Copy the admin password somewhere save and use it to login</p>)
+              }
             </div>
           </div>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={(e) => {
+            e.preventDefault(); // stop page refresh
+
+            if (!newPassword || newPassword.length === 0) {
+              // no generated password yet → normal login flow
+              handleLogin(e);
+            } else {
+              // password already generated → clear it or do something else
+              setNewPassword('');
+            }
+          }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="••••••••"
-                required
-              />
+              {
+                (!newPassword || newPassword.length === 0) ? 
+                (<input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="••••••••"
+                  required
+                />):
+                (<div className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between">
+                  <span className="truncate">{newPassword}</span>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(newPassword)}
+                    className="ml-3 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    📋 Copy
+                  </button>
+                </div>)
+              }
+              
             </div>
             {passwordError && (
               <p className="text-red-600 text-sm">{passwordError}</p>
             )}
-            <button
-              type="submit"
-              className="w-full bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700"
-            >
-              Unlock Dashboard
-            </button>
+            {
+              (!newPassword || newPassword.length === 0) ? (
+                <button
+                  type="submit"
+                  className="w-full bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700"
+                >
+                  Unlock Dashboard
+                </button>) :
+                (<button
+                  type="submit"
+                  className="w-full bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700"
+                >
+                  Go to Login
+                </button>)
+            }
           </form>
         </div>
       </div>

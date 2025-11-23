@@ -2,6 +2,7 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { generatePassword } = require("../helpers/helper");
 
 function createToken() {
   return jwt.sign(
@@ -16,9 +17,25 @@ async function login(req, res) {
   try {
     const rows = db.prepare('SELECT passtext FROM password').all();
     if (!rows || rows.length === 0) {
-      return res.status(404).json({ error: "no password found" });
+      const passtext = generatePassword();
+      const password = await bcrypt.hash(passtext, 10);
+      db.prepare('INSERT INTO password (passtext) VALUES (?)').run(password);
+      const token = createToken();
+      res
+        .json({
+          isMatch: false,
+          password: passtext
+        });
+      return;
     }
-    const isMatch = bcrypt.compare(payload, rows[0].passtext);
+    const isMatch = await bcrypt.compare(payload, rows[0].passtext);
+
+    if(!isMatch){
+      return res
+      .json({
+        isMatch: isMatch
+      });
+    }
 
     const token = createToken();
     
@@ -34,7 +51,6 @@ async function login(req, res) {
       });
       
   } catch (err) {
-    // console.log(err);
     res.status(500).json({ error: 'failed to fetch password' });
   }
 }

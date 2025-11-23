@@ -29,6 +29,7 @@ export default function MosqueAdminDashboard() {
   const [eventsFormErrors, setEventsFormErrors] = useState('');
   const [jamaatFormErrors, setJamaatFormErrors] = useState('');
   const [prayerFormErrors, setPrayerFormErrors] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [showLoading, setShowLoading] = useState(true);
   const [editFormPrayers, setEditFormPrayers] = useState({
     date: '',
@@ -59,7 +60,7 @@ export default function MosqueAdminDashboard() {
 
   async function authenticate(){
     try { 
-      await me(); 
+      await me();
       setIsAuthenticated(true); 
       setShowLoading(false); 
       loadData();
@@ -129,6 +130,8 @@ export default function MosqueAdminDashboard() {
         loadData();
         setPasswordError('');
         setPasswordInput('');
+      } else if(response.password) {
+        setNewPassword(response.password);
       } else {
         alert("Wrong Password");
       }
@@ -548,7 +551,9 @@ export default function MosqueAdminDashboard() {
         handleLogout = {handleLogout}
         passwordInput = {passwordInput}
         setPasswordInput = {setPasswordInput}
-        passwordError= {passwordError}/>
+        passwordError= {passwordError}
+        newPassword= {newPassword}
+        setNewPassword={setNewPassword}/>
       );
   }
   return (

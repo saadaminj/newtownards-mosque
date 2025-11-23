@@ -24,7 +24,21 @@ function validateTimeOrNull(value, fieldName) {
   return trimmed;
 }
 
+function generatePassword(length = 12) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}<>?";
+  let password = "";
+  const array = new Uint32Array(length);
+  crypto.getRandomValues(array);
+
+  for (let i = 0; i < length; i++) {
+    password += chars[array[i] % chars.length];
+  }
+
+  return password;
+}
+
 module.exports = {
   isPlainObject,
   validateTimeOrNull,
+  generatePassword
 };

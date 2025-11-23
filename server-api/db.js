@@ -48,9 +48,9 @@ db.exec(`
 
 // db.prepare('DELETE FROM password;').run();
 // run this to hash the password to store it in db : await bcrypt.hash(password, 10);
-const count = db.prepare('SELECT COUNT(*) as c FROM password').get().c;
-if (count === 0) {
-  db.prepare('INSERT INTO password (passtext) VALUES (?)').run('$2b$10$7Y9gpKG2CMz/D4nvqhlbE.HWUiWYpB6p4nbJZrntQn3fdw6pVGA/W').run();
-}
+// const count = db.prepare('SELECT COUNT(*) as c FROM password').get().c;
+// if (count === 0) {
+//   db.prepare('INSERT INTO password (passtext) VALUES (?)').run('$2b$10$7Y9gpKG2CMz/D4nvqhlbE.HWUiWYpB6p4nbJZrntQn3fdw6pVGA/W').run();
+// }
 
 module.exports = db;
