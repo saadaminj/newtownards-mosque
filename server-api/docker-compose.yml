@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  server-api:
+    build: ./
+    container_name: mosque-server-api
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: production
+      PORT: 5001
+    volumes:
+      - ./data:/data     # host folder : /data in container
+    env_file:
+      - ./.env

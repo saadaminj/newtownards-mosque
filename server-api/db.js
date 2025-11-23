@@ -1,6 +1,16 @@
 // db.js
-const Database = require("better-sqlite3");
-const db = new Database(process.env.DB_FILE || "data/app.db");
+const Database = require("better-sqlite3");// db.js
+const path = require("path");
+
+// Default: local path server-api/data/app.db
+const defaultDbPath = path.join(__dirname, "data", "app.db");
+
+// In Docker we will override DB_FILE to /data/app.db
+const dbPath = process.env.DB_FILE || defaultDbPath;
+
+console.log("Using SQLite DB file:", dbPath);
+
+const db = new Database(dbPath);
 // create table if not exists
 db.exec(`
   CREATE TABLE IF NOT EXISTS prayer_times (
