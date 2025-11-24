@@ -7,7 +7,6 @@ const Header = ({ time, nextPrayer, timeToEnd }) => {
 
   const formatTimeRemaining = (remaining) => {
     if (!remaining) return "-";
-    // console.log(remaining);
 
     const { hours, minutes, seconds } = remaining;
 

@@ -52,14 +52,11 @@ export default function MosqueWebsite() {
     loadDataPrayerTimes();
     loadDataJamaat();
     loadDataEvents();
-    console.log("load data called");
   }, []);
 
   const loadDataPrayerTimes = async () => {
     try {
       const data = await fetchPrayerTimes();
-      // console.log(data);
-      // console.log(prayerData);
       setPrayerData(prev => {
         if (!data) return prev;
 
@@ -68,26 +65,19 @@ export default function MosqueWebsite() {
 
         // Loop over dates coming from the API
         Object.entries(data).forEach(([dateKey, apiDay]) => {
-          // console.log(dateKey);
-          // console.log(apiDay);
-          // console.log(prev[dateKey]);
           // Only update if this date already exists in prev
           if (prev[dateKey]) {
             next[dateKey] = {
               ...apiDay,        // overwrite with new timings from API
             };
-            // console.log(next[dateKey]);
           }
           // If date doesn't exist in prev, we just ignore it
         });
 
         return next;
       });
-
-      // console.log(prayerData);
     } catch (err) {
       if (isDev) console.error(err);
-      console.error("Failed to fetch prayer times:");
     }
   };
 
