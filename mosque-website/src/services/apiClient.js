@@ -21,12 +21,15 @@ export async function apiGet(path) {
 
         if (!res.ok) {
             const message = `Request failed with status ${res.status}`;
+            if(isDev) console.error(res);
             throw new Error(message);
         }
 
         try {
+            if(isDev) console.log(res);
             return await res.json();
-        } catch {
+        } catch (err){
+            if(isDev) console.error(err);
             throw new Error("Invalid JSON response from server");
         }
     } catch (err){      
@@ -51,14 +54,17 @@ export async function apiPost(path, body) {
 
     if (!res.ok) {
       const message = `Request failed with status ${res.status}`;
+      if(isDev) console.error(res);
       throw new Error(message);
     }
 
     if (res.status === 204) {
+      if(isDev) console.error(res);
       return null;
     }
 
     try {
+      if(isDev) console.log(res);
       return await res.json();
     } catch {
       if(isDev) console.error("Invalid JSON response from server:");

@@ -1,4 +1,4 @@
-import { useState,useCallback , useEffect } from 'react';
+import { useState , useEffect } from 'react';
 import JamaatTimesWidget from "./widgets/jamaat";
 import PrayerTimesWidget from "./widgets/prayer_times";
 import DonateWidget from "./widgets/donate";
@@ -11,9 +11,13 @@ import ContactWidget from "./widgets/contact"
 import {fetchPrayerTimes} from "./services/prayerService"
 import {fetchJamaatTimes} from "./services/jamaatService"
 import {fetchEvents} from "./services/eventService"
+import { createPrayerData, getNextPrayer } from './utils/dictionary_utils';
+import { isDev } from './env';
 
 export default function MosqueWebsite() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [timeToEnd, setTimeToEnd] = useState({ hours: 0, minutes: 0, seconds: 0});
+  const [nextPrayer, setNextPrayer] = useState("");
   const [activeTab, setActiveTab] = useState('home');
   const [prayerData, setPrayerData] = useState([]);
   const [jamaatData, setJamaatData] = useState([]);
@@ -28,22 +32,62 @@ export default function MosqueWebsite() {
     return () => clearInterval(timer);
   }, []);
 
-  const loadData = useCallback(() => {
+  useEffect(() => {
+    if (!prayerData) return;
+
+    try {
+      const result = getNextPrayer(prayerData, currentTime);
+      if (!result) return;
+
+      setTimeToEnd(result.timeRemaining);
+      setNextPrayer(result.nextPrayerName);
+    } catch (err) {
+      if (isDev) console.log(err);
+    }
+  }, [prayerData, currentTime]); 
+
+
+  useEffect(() => {
+    setPrayerData(createPrayerData());
     loadDataPrayerTimes();
     loadDataJamaat();
     loadDataEvents();
+    console.log("load data called");
   }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const loadDataPrayerTimes = async () => {
     try {
       const data = await fetchPrayerTimes();
-      setPrayerData(data);
-    } catch {
-      // console.error("Failed to fetch prayer times:");
+      // console.log(data);
+      // console.log(prayerData);
+      setPrayerData(prev => {
+        if (!data) return prev;
+
+        // Start with the previous state
+        const next = { ...prev };
+
+        // Loop over dates coming from the API
+        Object.entries(data).forEach(([dateKey, apiDay]) => {
+          // console.log(dateKey);
+          // console.log(apiDay);
+          // console.log(prev[dateKey]);
+          // Only update if this date already exists in prev
+          if (prev[dateKey]) {
+            next[dateKey] = {
+              ...apiDay,        // overwrite with new timings from API
+            };
+            // console.log(next[dateKey]);
+          }
+          // If date doesn't exist in prev, we just ignore it
+        });
+
+        return next;
+      });
+
+      // console.log(prayerData);
+    } catch (err) {
+      if (isDev) console.error(err);
+      console.error("Failed to fetch prayer times:");
     }
   };
 
@@ -51,8 +95,8 @@ export default function MosqueWebsite() {
     try {
       const data = await fetchJamaatTimes();
       setJamaatData(data);
-    } catch {
-      // console.error("Failed to fetch jamaat times:");
+    } catch (err) {
+      if (isDev) console.error(err);
     }
   };
 
@@ -60,14 +104,14 @@ export default function MosqueWebsite() {
     try {
       const data = await fetchEvents();
       setEventsData(data);
-    } catch {
-      // console.error("Failed to fetch events:");
+    } catch (err) {
+      if (isDev) console.error(err);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
-      <Header time = {currentTime}/>
+      <Header time = {currentTime} nextPrayer = {nextPrayer} timeToEnd = {timeToEnd}/>
 
       <nav className="bg-white shadow-md sticky top-0 z-10">
         <div className="container mx-auto px-4">
