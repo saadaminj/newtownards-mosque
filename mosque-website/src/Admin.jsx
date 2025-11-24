@@ -14,6 +14,7 @@ import { login, logout, me } from './services/passwordService';
 import { isDev } from './env';
 
 export default function MosqueAdminDashboard() {
+  const [filteredTimes, setFilteredTimes] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [inputJSON, setInputJSON] = useState("");
   const [activeTab, setActiveTab] = useState('prayers');
@@ -87,6 +88,7 @@ export default function MosqueAdminDashboard() {
     try {
       const data = await fetchPrayerTimes();
       setPrayerData(data);
+      setFilteredTimes(prayerData);
     } catch (error) {
       if(isDev) console.error("Failed to fetch prayer times:", error);
     }
@@ -180,6 +182,7 @@ export default function MosqueAdminDashboard() {
         try {
           const imported = JSON.parse(e.target.result);
           setPrayerData(imported);
+          setFilteredTimes(prayerData);
           alert('Data imported successfully!');
         } catch (error) {
           if(isDev) console.log(error);
@@ -196,7 +199,7 @@ export default function MosqueAdminDashboard() {
     try {
       const imported = JSON.parse(inputJSON);
 
-      const newPrayerData = { ...prayerData };
+      let newPrayerData = { ...prayerData };
 
       for (const [date, newTimes] of Object.entries(imported)) {
 
@@ -213,8 +216,19 @@ export default function MosqueAdminDashboard() {
           ...(newPrayerData[date] || {}),
           ...newTimes,
         };
-    }
+      }
+
+      newPrayerData = Object.entries(newPrayerData)
+      .sort((a, b) => new Date(a[0]) - new Date(b[0])) // a[0], b[0] are the date keys
+      .reduce((acc, [date, times]) => {
+        acc[date] = times;
+        return acc;
+      }, {});
+
       setPrayerData(newPrayerData);
+      setFilteredTimes(newPrayerData);
+      console.log(prayerData);
+      console.log(filteredTimes);
       setInputJSON("");
       if(number > 0){
         alert("Some rows can't be inserted due to validation errors: "+number);
@@ -295,6 +309,7 @@ export default function MosqueAdminDashboard() {
       }, {});
 
     setPrayerData(newTimes);
+    setFilteredTimes(prayerData);
     setPrayerEditingIndex(null);
   };
 
@@ -308,6 +323,7 @@ export default function MosqueAdminDashboard() {
           delete updated[index];
           return updated;
         });
+        setFilteredTimes(prayerData);
       } catch (err) {
         if(String(err).includes("This entry does not exist in Database")){
           setPrayerData(prev => {
@@ -315,6 +331,7 @@ export default function MosqueAdminDashboard() {
             delete updated[index]; 
             return updated;
           });
+          setFilteredTimes(prayerData);
         }
         // console.error("Network or JSON error:", err);
         alert(err);
@@ -496,13 +513,18 @@ export default function MosqueAdminDashboard() {
     setEditFormEvents({name:index,...eventsData[index]});
   };
 
-  let filteredTimes = prayerData ? Object.entries(prayerData) : [];
+  useEffect(() => {
+    const entries = Object.entries(prayerData || {}); // <- source data
 
-  filteredTimes = filteredTimes
-    .filter(([key]) =>
-      !searchDate ? true : key.toLowerCase().includes(searchDate.toLowerCase())
-    )
-    .map(([key, value]) => ({ date: key, ...value }));
+    const result = entries
+      .filter(([key]) =>
+        !searchDate ? true : key.toLowerCase().includes(searchDate.toLowerCase())
+      )
+      .map(([key, value]) => ({ date: key, ...value }));
+
+    setFilteredTimes(result);
+  }, [searchDate, prayerData]);
+
 
 
   let filteredTimesJamaat = jamaatData ? Object.entries(jamaatData) : [];

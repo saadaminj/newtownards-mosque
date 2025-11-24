@@ -38,7 +38,7 @@ export const PrayerDisplayWidget = ({searchDate, setSearchDate, filteredTimes, e
                   </td>
                 </tr>
               ) : (
-                filteredTimes?.map((day) => {
+                (Array.isArray(filteredTimes) ? filteredTimes : []).map((day) => {
                   const dateKey = day.date; // this is like "2024-04-01"
 
                   return (
