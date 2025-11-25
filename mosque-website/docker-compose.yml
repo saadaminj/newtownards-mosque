@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  mosque-website:
+    build: ./
+    container_name: mosque-website
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      NODE_ENV: production
+      PORT: 5173
+      DOMAIN: http://localhost
+    volumes:
+      - ./data:/data     # host folder : /data in container
+    env_file:
+      - ./.env
