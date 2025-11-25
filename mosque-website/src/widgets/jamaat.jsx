@@ -1,8 +1,8 @@
 import { Clock } from "lucide-react";
-
-const title = "Today's Jamaat Time";
+import Strings from "../utils/Strings.json";
 
 const JamaatTimesWidget = ({ jamaatData }) => {
+  const pageStrings = Strings["jamaat"];
 
   if (!jamaatData || Object.keys(jamaatData).length === 0) {
     return (
@@ -16,7 +16,7 @@ const JamaatTimesWidget = ({ jamaatData }) => {
               /></span>
           </div>
           <h2 className="text-3xl md:text-4xl font-extrabold text-emerald-900 text-center">
-            No Jama'at time to display
+            {pageStrings.no_jamaat_time}
           </h2>
           <p className="text-base md:text-lg text-emerald-700 text-center max-w-xl">
             {/* Add a new event to see it appear here in your mosque jamat schedule. */}
@@ -31,7 +31,7 @@ const JamaatTimesWidget = ({ jamaatData }) => {
     <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl shadow-lg p-8 text-white">
       <div className="flex items-center justify-center mb-6">
         <Clock className="w-8 h-8 mr-3" />
-        <h3 className="text-2xl font-bold">{title}</h3>
+        <h3 className="text-2xl font-bold">{pageStrings.title}</h3>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

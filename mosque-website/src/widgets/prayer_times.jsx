@@ -1,16 +1,9 @@
 import { useState } from 'react';
 import { Clock , ChevronLeft, ChevronRight } from "lucide-react";
+import Strings from '../utils/Strings.json';
 
-const title = "Prayer Times";
-const GoToTodayText = "Go to Today";
-const minus30 = "-30 days";
-const minus7 = "-7 days";
-const plus30 = "+30 days";
-const plus7 = "+7 days";
-const noteTitle = "Note:";
-const noteDescription = "Prayer times are calculated based on astronomical data. \
-                Jamaah (congregation) starts 10-15 minutes after the Adhan (call to prayer)."
 const PrayerTimesWidget = ({ prayerData }) => {
+    const pageStrings = Strings["prayer_times"];
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     
@@ -71,7 +64,7 @@ const PrayerTimesWidget = ({ prayerData }) => {
         <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="flex items-center justify-center mb-8">
               <Clock className="w-10 h-10 text-emerald-600 mr-3" />
-              <h2 className="text-3xl font-bold text-emerald-800">{title}</h2>
+              <h2 className="text-3xl font-bold text-emerald-800">{pageStrings.title}</h2>
             </div>
 
             {/* Date Selector */}
@@ -98,7 +91,7 @@ const PrayerTimesWidget = ({ prayerData }) => {
                       <button
                         onClick={goToToday}
                         className="mt-2 text-emerald-600 hover:text-emerald-700 font-semibold underline">
-                        {GoToTodayText}
+                        {pageStrings.GoToTodayText}
                       </button>
                     )}
                   </div>
@@ -116,25 +109,25 @@ const PrayerTimesWidget = ({ prayerData }) => {
                     onClick={() => changeDate(-7)}
                     className="px-4 py-2 bg-white hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold transition-colors"
                   >
-                    {minus7}
+                    {pageStrings.minus7}
                   </button>
                   <button
                     onClick={() => changeDate(-30)}
                     className="px-4 py-2 bg-white hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold transition-colors"
                   >
-                    {minus30}
+                    {pageStrings.minus30}
                   </button>
                   <button
                     onClick={() => changeDate(30)}
                     className="px-4 py-2 bg-white hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold transition-colors"
                   >
-                    {plus30}
+                    {pageStrings.plus30}
                   </button>
                   <button
                     onClick={() => changeDate(7)}
                     className="px-4 py-2 bg-white hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold transition-colors"
                   >
-                    {plus7}
+                    {pageStrings.plus7}
                   </button>
                 </div>
               </div>
@@ -150,7 +143,7 @@ const PrayerTimesWidget = ({ prayerData }) => {
             </div>
             <div className="mt-8 p-6 bg-amber-50 rounded-lg border-l-4 border-amber-500 max-w-2xl mx-auto">
               <p className="text-gray-700">
-                <strong>{noteTitle}</strong> {noteDescription}
+                <strong>{pageStrings.noteTitle}</strong> {pageStrings.noteDescription}
               </p>
             </div>
           </div>

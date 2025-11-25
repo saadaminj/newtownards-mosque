@@ -19,25 +19,98 @@
     "description2": "© 2024 Newtownards Islamic Cultural Centre. All rights reserved."
   },
 
+  "events":{
+    "title": "Events & Programs",
+    "no_event_display": "No events to display"
+  },
+
+  "info":{
+    "title": "Islamic Information",
+    "islamicInfo": [
+      {
+        "title": "Five Pillars of Islam",
+        "content": "Shahada (Faith), Salah (Prayer), Zakat (Charity), Sawm (Fasting), Hajj (Pilgrimage)"
+      },
+      {
+        "title": "Friday Prayer (Jummah)",
+        "content": "Jummah is obligatory for Muslim men. It replaces Dhuhr prayer on Fridays and includes a sermon (khutbah)."
+      },
+      {
+        "title": "Wudu (Ablution)",
+        "content": "Ritual purification required before prayer. Wash hands, mouth, nose, face, arms, head, and feet."
+      },
+      {
+        "title": "Importance of Prayer",
+        "content": "Prayer is the second pillar of Islam and the first thing we will be questioned about on the Day of Judgment."
+      }
+    ]
+  },
+
+  "jamaat": {
+    "title": "Today's Jamaat Time",
+    "no_jamaat_time": "No Jama'at time to display"
+  },
+
+  "prayer_times": {
+    "title": "Prayer Times",
+    "GoToTodayText": "Go to Today",
+    "minus30": "-30 days",
+    "minus7": "-7 days",
+    "plus30": "+30 days",
+    "plus7": "+7 days",
+    "noteTitle": "Note:",
+    "noteDescription": "Prayer times are calculated based on astronomical data. Jamaah (congregation) starts 10-15 minutes after the Adhan (call to prayer)."
+  },
+
+  "welcome": {
+    "title": "Welcome to Our Mosque",
+    "description": "A place of worship, learning, and community. We welcome all Muslims and those interested in learning about Islam. Join us for daily prayers, Islamic education, and community events."
+  },
+
   "contact": {
     "title": "Contact Us",
     "address": "address",
-    "street": "123 Community Street",
-    "city": "London, UK",
-    "postcode":"Postal Code: SW1A 1AA",
+    "street": "24 Greenwell Street",
+    "city": "Newtownards, Northern Ireland, UK",
+    "postcode":"Postal Code: BT23 7LN",
     "phone":"Phone",
-    "number": "+44 20 1234 5678",
+    "number": "028 9181 9566",
     "email": "Email",
-    "emailaddress": "info@centralmosque.org",
+    "emailaddress": "-",
     "openingHours": "Opening Hours",
     "daily": ["Daily:"," Opens 30 minutes before Fajr, Closes after Isha"],
     "friday":  ["Friday:"," Opens early for Jummah preparation"],
     "office_hours":  ["Office Hours:"," Monday - Friday, 9:00 AM - 5:00 PM"]
   },
 
+  "donate": {
+    "title": "Support Our Mosque",
+    "description": "Your donations help maintain our mosque, support community programs, and serve those in need. May Allah reward your generosity.",
+    "bankTransferDetails": "Bank Transfer Details",
+    "bankName": "Account Type:",
+    "accountName": "Account Name:",
+    "accountNumber": "Account Number:",
+    "sortCode": "Sort Code:",
+    "iban": "IBAN:",
+    "swiftCode": "SWIFT/BIC:",
+
+    "zakatTitle": "Zakat & Sadaqah",
+    "zakatDescription": "We accept Zakat, Sadaqah, and general donations. Please specify the type of donation in your transfer reference.",
+    "zakatDescription2": "'The example of those who spend their wealth in the way of Allah is like a seed of grain which grows seven spikes, in each spike is a hundred grains.' - Quran 2:261",
+
+    "bankDetails": {
+        "bankName": "Business Account",
+        "accountName": "NEWTOWNARDS ISLAMIC CULTURAL CENTRE (NICC)",
+        "accountNumber": "41046683",
+        "sortCode": "95-02-51",
+        "iban": "-",
+        "swift": "-"
+      }
+    },
+
   "Admin": {
     "prayers": "prayers",
-    "jamaaat": "jamaat",
+    "jamaat": "jamaat",
     "events": "events",
     "logout": "Logout",
     "failed_prayer_times": "Failed to fetch prayer times:",
@@ -76,17 +149,5 @@
     "donate": "donate", 
     "info": "info", 
     "contact": "contact"
-  },
-
-  "prayers": {
-    "title": "Prayer Times | Mosque Admin",
-    "tabTitle": "Prayer Times",
-    "description": "View and manage daily prayer and Jamaat times."
-  },
-
-  "events": {
-    "title": "Events | Mosque Admin",
-    "tabTitle": "Events",
-    "description": "Create and manage community events."
   }
 }

@@ -657,7 +657,7 @@ export default function MosqueAdminDashboard() {
           duplicateEntry = {duplicateEntry} 
           deleteEntry = {deleteEntry}/>
       </div>)}
-      {activeTab === pageStrings.jamaaat && (
+      {activeTab === pageStrings.jamaat && (
         <div>
           <AdminHeader saveData={saveDataJamaat} addNewEntry={addNewEntryJamaat}/>
           {editingIndexJamaat !== null && (
