@@ -13,12 +13,15 @@ import {fetchJamaatTimes} from "./services/jamaatService"
 import {fetchEvents} from "./services/eventService"
 import { createPrayerData, getNextPrayer } from './utils/dictionary_utils';
 import { isDev } from './env';
+import Strings from './utils/Strings.json';
 
 export default function MosqueWebsite() {
+
+  const pageStrings = Strings["MosqueWebsite"];
   const [currentTime, setCurrentTime] = useState(new Date());
   const [timeToEnd, setTimeToEnd] = useState({ hours: 0, minutes: 0, seconds: 0});
   const [nextPrayer, setNextPrayer] = useState("");
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(pageStrings.home);
   const [prayerData, setPrayerData] = useState([]);
   const [jamaatData, setJamaatData] = useState([]);
   const [eventsData, setEventsData] = useState([]);
@@ -107,13 +110,13 @@ export default function MosqueWebsite() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-3 md:hidden">
             <span className="font-semibold text-emerald-700">
-              Menu
+              {pageStrings.Menu}
             </span>
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(prev => !prev)}
               className="inline-flex items-center justify-center p-2 rounded-md border border-emerald-600 text-emerald-700">
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">{pageStrings.OpenMainMenu}</span>
               <div className="space-y-1">
                 <span className="block h-0.5 w-5 bg-emerald-700"></span>
                 <span className="block h-0.5 w-5 bg-emerald-700"></span>
@@ -128,7 +131,8 @@ export default function MosqueWebsite() {
               ${isMobileMenuOpen ? "flex" : "hidden"}
               md:flex md:flex-row md:space-y-0 md:space-x-2 md:justify-center md:py-4
             `}>
-            {["home", "jamaat times", "prayers", "events", "donate", "info", "contact"].map(tab => (
+            {[pageStrings.home, pageStrings.jamaat_times, pageStrings.prayers, 
+            pageStrings.events, pageStrings.donate, pageStrings.info, pageStrings.contact].map(tab => (
               <button
                 key={tab}
                 onClick={() => {
@@ -149,7 +153,7 @@ export default function MosqueWebsite() {
 
       <main className="container mx-auto px-4 py-8">
         
-        {activeTab === 'home' && (
+        {activeTab === pageStrings.home && (
           <div className="space-y-8">
             <WelcomeMosqueWidget/>
             {jamaatData &&
@@ -169,27 +173,27 @@ export default function MosqueWebsite() {
           </div>
         )}
 
-        {activeTab === 'jamaat times' && (
+        {activeTab === pageStrings.jamaat_times && (
             <JamaatTimesWidget jamaatData={jamaatData} />
         )}
 
-         {activeTab === 'prayers' && (
+         {activeTab === pageStrings.prayers && (
             <PrayerTimesWidget prayerData={prayerData} />
         )}
         
-        {activeTab === 'events' && (
+        {activeTab === pageStrings.events && (
             <EventsWidget eventsData={eventsData} />
         )}
 
-        {activeTab === 'donate' && (
+        {activeTab === pageStrings.donate && (
             <DonateWidget/>
         )}
 
-        {activeTab === 'info' && (
+        {activeTab === pageStrings.info && (
           <InfoWidget/>
         )}
 
-        {activeTab === 'contact' && (
+        {activeTab === pageStrings.contact && (
           <ContactWidget/>
         )}
       </main>

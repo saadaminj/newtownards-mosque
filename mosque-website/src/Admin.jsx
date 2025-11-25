@@ -12,12 +12,14 @@ import { deleteJamaat, fetchJamaatTimes, saveJamaatTimes } from './services/jama
 import { deleteEvent, fetchEvents, saveEvents } from './services/eventService';
 import { login, logout, me } from './services/passwordService';
 import { isDev } from './env';
+import Strings from './utils/Strings.json';
 
 export default function MosqueAdminDashboard() {
+  const pageStrings = Strings["Admin"];
   const [filteredTimes, setFilteredTimes] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [inputJSON, setInputJSON] = useState("");
-  const [activeTab, setActiveTab] = useState('prayers');
+  const [activeTab, setActiveTab] = useState(pageStrings.prayers);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [prayerData, setPrayerData] = useState([]);
@@ -90,7 +92,7 @@ export default function MosqueAdminDashboard() {
       setPrayerData(data);
       setFilteredTimes(prayerData);
     } catch (error) {
-      if(isDev) console.error("Failed to fetch prayer times:", error);
+      if(isDev) console.error(pageStrings.failed_prayer_times, error);
     }
   };
 
@@ -99,7 +101,7 @@ export default function MosqueAdminDashboard() {
       const data = await fetchJamaatTimes();
       setJamaatData(data);
     } catch (error) {
-      if(isDev) console.error("Failed to fetch jamaat times:", error);
+      if(isDev) console.error(pageStrings.failed_jamaat_times, error);
     }
   };
 
@@ -108,7 +110,7 @@ export default function MosqueAdminDashboard() {
       const data = await fetchEvents();
       setEventsData(data);
     } catch (error) {
-      if(isDev) console.error("Failed to fetch events:", error);
+      if(isDev) console.error(pageStrings.failed_event_times, error);
     }
   };
 
@@ -135,7 +137,7 @@ export default function MosqueAdminDashboard() {
       } else if(response.password) {
         setNewPassword(response.password);
       } else {
-        alert("Wrong Password");
+        alert(pageStrings.wrong_password);
       }
     } catch(error){
       if(isDev) console.log(error);
@@ -147,30 +149,30 @@ export default function MosqueAdminDashboard() {
   const saveData = async () => {
     try {
       await savePrayerTimes(prayerData);
-      alert('Prayer times saved successfully! Other pages can now access this data.');
+      alert(pageStrings.prayer_times_saved);
     } catch (error) {
       if(isDev) console.log(error);
-      alert(error);
+      alert(pageStrings.failed_saved);
     }
   };
 
   const saveDataJamaat = async () => {
     try {
       await saveJamaatTimes(jamaatData);
-      alert('Jamaat times saved successfully! Other pages can now access this data.');
+      alert(pageStrings.jamaat_times_saved);
     } catch (error){
       if(isDev) console.log(error);
-      alert('Failed to save data');
+      alert(pageStrings.failed_saved);
     }
   };
 
   const saveDataEvents = async () => {
     try {
       await saveEvents(eventsData);
-      alert('Events saved successfully! Other pages can now access this data.');
+      alert(pageStrings.events_saved);
     } catch (error){
       if(isDev) console.log(error);
-      alert('Failed to save data');
+      alert(pageStrings.failed_saved);
     }
   };
 
@@ -183,10 +185,10 @@ export default function MosqueAdminDashboard() {
           const imported = JSON.parse(e.target.result);
           setPrayerData(imported);
           setFilteredTimes(prayerData);
-          alert('Data imported successfully!');
+          alert(pageStrings.data_saved);
         } catch (error) {
           if(isDev) console.log(error);
-          alert('Invalid JSON file',error);
+          alert(pageStrings.invalid_json, error);
         }
       };
       reader.readAsText(file);
@@ -231,12 +233,12 @@ export default function MosqueAdminDashboard() {
       console.log(filteredTimes);
       setInputJSON("");
       if(number > 0){
-        alert("Some rows can't be inserted due to validation errors: "+number);
+        alert(pageStrings.some_rows_cant_be_inserted + number);
       }
-      else alert('Data imported successfully!');
+      else alert(pageStrings.data_saved);
     } catch (error) {
       if(isDev) console.log(error);
-      alert('Invalid JSON input',error);
+      alert(pageStrings.invalid_json_input, error);
     }
   };
 
@@ -270,12 +272,12 @@ export default function MosqueAdminDashboard() {
 
   const saveEntry = () => {
     if (!editFormPrayers.date) {
-      alert('Date is required');
+      alert(pageStrings.date_required);
       return;
     }
     
     if (!DATE_REGEX.test(editFormPrayers.date)) {
-      setPrayerFormErrors("Please enter a valid date");
+      setPrayerFormErrors(pageStrings.enter_valid_date);
       return;
     }
     else if (
@@ -285,7 +287,7 @@ export default function MosqueAdminDashboard() {
       (editFormPrayers.asr && !TIME_REGEX.test(editFormPrayers.asr)) ||
       (editFormPrayers.isha && !TIME_REGEX.test(editFormPrayers.isha))
     ) {
-      setPrayerFormErrors("Time can only contain numbers");
+      setPrayerFormErrors(pageStrings.time_only_numbers);
       return;
     }
 
@@ -314,7 +316,7 @@ export default function MosqueAdminDashboard() {
   };
 
   const deleteEntry = async (index) =>  {
-    if (confirm('Delete this entry?')) {
+    if (confirm(pageStrings.delete_entry)) {
       
       try{
         await deletePrayer(index);
@@ -325,7 +327,7 @@ export default function MosqueAdminDashboard() {
         });
         setFilteredTimes(prayerData);
       } catch (err) {
-        if(String(err).includes("This entry does not exist in Database")){
+        if(String(err).includes(pageStrings.entry_doesnt_exist)){
           setPrayerData(prev => {
             const updated = { ...prev };
             delete updated[index]; 
@@ -333,7 +335,7 @@ export default function MosqueAdminDashboard() {
           });
           setFilteredTimes(prayerData);
         }
-        // console.error("Network or JSON error:", err);
+        if (isDev) console.error(pageStrings.network_error, err);
         alert(err);
       }
     }
@@ -360,16 +362,16 @@ export default function MosqueAdminDashboard() {
 
   const saveEntryJamaat = () => {
     if (!editFormJamaat || !editFormJamaat.name || editFormJamaat.name.trim().length === 0) {
-      alert("Name is required");
+      alert(pageStrings.name_required);
       return;
     }
 
     if (!TEXT_REGEX.test(editFormJamaat.name)) {
-      setJamaatFormErrors("Jamaat name can contain only letters, numbers, and spaces.");
+      setJamaatFormErrors(pageStrings.jamaat_name_required);
       return;
     }
     else if (!TIME_REGEX.test(editFormJamaat.time)) {
-      setJamaatFormErrors("Jamaat time can not be empty and must contain only numbers");
+      setJamaatFormErrors(pageStrings.jamaat_cant_empty);
       return;
     }
 
@@ -401,7 +403,7 @@ export default function MosqueAdminDashboard() {
   }
 
   const deleteEntryJamaat = async (index) =>  {
-    if (confirm('Delete this entry?')) {
+    if (confirm(pageStrings.delete_entry)) {
       try{
         await deleteJamaat(index);
         setJamaatData(prev => {
@@ -410,14 +412,14 @@ export default function MosqueAdminDashboard() {
           return updated;
         });
       } catch (err){
-        if(String(err).includes("This entry does not exist in Database")){
+        if(String(err).includes(pageStrings.entry_doesnt_exist)){
           setJamaatData(prev => {
             const updated = { ...prev };
             delete updated[index]; 
             return updated;
           });
         }
-        // console.error("Network or JSON error:", err);
+        if (isDev) console.error(pageStrings.network_error, err);
         alert(err);
       }
     }
@@ -444,20 +446,20 @@ export default function MosqueAdminDashboard() {
 
   const saveEntryEvents = () => {
     if (!editFormEvents || !editFormEvents.name || editFormEvents.name.trim().length === 0) {
-      alert("Name is required");
+      alert(pageStrings.name_required);
       return;
     }
 
     if (!TEXT_REGEX.test(editFormEvents.name)) {
-      setEventsFormErrors("Event name can contain only letters, numbers, and spaces.");
+      setEventsFormErrors(pageStrings.event_requirement);
       return;
     }
     else if (!TEXT_REGEX.test(editFormEvents.description)) {
-      setEventsFormErrors("Event description can contain only letters, numbers, and spaces.");
+      setEventsFormErrors(pageStrings.event_description_requirement);
       return;
     }
     else if (editFormEvents.time && !TIME_REGEX.test(editFormEvents.time)) {
-      setEventsFormErrors("Event time can contain only letters, numbers, and spaces.");
+      setEventsFormErrors(pageStrings.event_time_requirement);
       return;
     }
 
@@ -484,7 +486,7 @@ export default function MosqueAdminDashboard() {
   };
 
   const deleteEntryEvents = async (index) =>  {
-    if (confirm('Delete this entry?')) {
+    if (confirm(pageStrings.delete_entry)) {
       
       try{
         await deleteEvent(index);
@@ -495,14 +497,14 @@ export default function MosqueAdminDashboard() {
           return updated;
         });
       } catch (err) {
-        if(String(err).includes("This entry does not exist in Database")){
+        if(String(err).includes(pageStrings.entry_doesnt_exist)){
           setEventsData(prev => {
             const updated = { ...prev };
             delete updated[index]; 
             return updated;
           });
         }
-        // console.error("Network or JSON error:", err);
+        if (isDev) console.error(pageStrings.network_error, err);
         alert(err);
       }
     }
@@ -584,7 +586,7 @@ export default function MosqueAdminDashboard() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             <div className="flex-1 flex justify-center space-x-2 flex-wrap">
-              {['prayers', 'jamaat', 'events'].map((tab) => (
+              {[pageStrings.prayers, pageStrings.jamaat, pageStrings.events].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -617,13 +619,13 @@ export default function MosqueAdminDashboard() {
                   d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3-3m0 0l3 3m-3-3v12"
                 />
               </svg>
-              <span>Logout</span>
+              <span>{pageStrings.logout}</span>
             </button>
           </div>
         </div>
       </nav>
 
-      {activeTab === 'prayers' && (
+      {activeTab === pageStrings.prayers && (
         <div className="max-w-7xl mx-auto">
         
         <AdminHeader 
@@ -655,7 +657,7 @@ export default function MosqueAdminDashboard() {
           duplicateEntry = {duplicateEntry} 
           deleteEntry = {deleteEntry}/>
       </div>)}
-      {activeTab === 'jamaat' && (
+      {activeTab === pageStrings.jamaaat && (
         <div>
           <AdminHeader saveData={saveDataJamaat} addNewEntry={addNewEntryJamaat}/>
           {editingIndexJamaat !== null && (
@@ -677,7 +679,7 @@ export default function MosqueAdminDashboard() {
             deleteEntry={deleteEntryJamaat}/>
         </div>
       )}
-      {activeTab === 'events' && (
+      {activeTab === pageStrings.events && (
         <div className="max-w-7xl mx-auto">
         <AdminHeader saveData={saveDataEvents} addNewEntry={addNewEntryEvents}/>
         {editingIndexEvents !== null && (

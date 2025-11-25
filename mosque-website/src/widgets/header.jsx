@@ -1,7 +1,10 @@
 import { capitalize } from "../utils/dictionary_utils";
+import Strings from '../utils/Strings.json';
 
-const title = "Newtownards Islamic Cultural Centre";
-const description = "Peace be upon you - As-Salamu Alaikum";
+const pageStrings = Strings["header"];
+
+const title = pageStrings.title;
+const description = pageStrings.description;
 
 const Header = ({ time, nextPrayer, timeToEnd }) => {
 
@@ -10,7 +13,7 @@ const Header = ({ time, nextPrayer, timeToEnd }) => {
 
     const { hours, minutes, seconds } = remaining;
 
-    if (hours <= 0 && minutes <= 0) return "Starting soon";
+    if (hours <= 0 && minutes <= 0) return pageStrings.starting_soon;
 
     const pad = (n) => String(n).padStart(2, "0");
     if (hours > 0) return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
@@ -44,7 +47,7 @@ const Header = ({ time, nextPrayer, timeToEnd }) => {
           {/* Current time */}
           <div className="bg-emerald-800/40 rounded-2xl px-4 py-3">
             <p className="uppercase tracking-wide text-emerald-200 text-xs">
-              Current Time
+              {pageStrings.current_time}
             </p>
             <p className="font-mono text-2xl md:text-3xl mt-1">
               {time
@@ -60,7 +63,7 @@ const Header = ({ time, nextPrayer, timeToEnd }) => {
           {/* Next prayer */}
           <div className="bg-emerald-800/40 rounded-2xl px-4 py-3">
             <p className="uppercase tracking-wide text-emerald-200 text-xs">
-              Next Prayer
+              {pageStrings.next_prayer}
             </p>
             <p className="text-xl md:text-2xl font-semibold mt-1">
               {capitalize(nextPrayer) ? capitalize(nextPrayer) : "-"}
@@ -70,7 +73,7 @@ const Header = ({ time, nextPrayer, timeToEnd }) => {
           {/* Time remaining */}
           <div className="bg-emerald-800/40 rounded-2xl px-4 py-3">
             <p className="uppercase tracking-wide text-emerald-200 text-xs">
-              Time Until Next Prayer
+              {pageStrings.time_until_next}
             </p>
             <p className="font-mono text-2xl md:text-3xl mt-1">
               {formattedRemaining}

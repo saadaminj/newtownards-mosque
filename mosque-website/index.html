@@ -4,7 +4,28 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/mosque_logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Islamic Centre</title>
+
+    <!-- Fallback title (will be overwritten by script below) -->
+    <title>Loading…</title>
+
+    <script type="module">
+      import pageMeta from '/src/utils/Strings.json';
+
+      const meta = pageMeta.index; // use the key from the JSON file
+
+      if (meta?.tab_title) {
+        document.title = meta.tab_title;
+      }
+      if (meta?.tab_description) {
+        let tag = document.querySelector('meta[name="description"]');
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.name = 'description';
+          document.head.appendChild(tag);
+        }
+        tag.content = meta.tab_description;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,92 @@
+{ 
+  "index": {
+    "tab_title": "Islamic Centre",
+    "tab_description": "Newtownards Islamic Cultural Centre"
+  },
+
+  "header": {
+    "title": "Newtownards Islamic Cultural Centre",
+    "description": "Peace be upon you - As-Salamu Alaikum",
+    "starting_soon": "Starting soon",
+    "current_time": "Current Time",
+    "next_prayer": "Next Prayer",
+    "time_until_next": "Time Until Next Prayer"
+  },
+
+  "footer": {
+    "title": "Newtownards Islamic Cultural Centre",
+    "description1": "Serving the community with faith and compassion",
+    "description2": "© 2024 Newtownards Islamic Cultural Centre. All rights reserved."
+  },
+
+  "contact": {
+    "title": "Contact Us",
+    "address": "address",
+    "street": "123 Community Street",
+    "city": "London, UK",
+    "postcode":"Postal Code: SW1A 1AA",
+    "phone":"Phone",
+    "number": "+44 20 1234 5678",
+    "email": "Email",
+    "emailaddress": "info@centralmosque.org",
+    "openingHours": "Opening Hours",
+    "daily": ["Daily:"," Opens 30 minutes before Fajr, Closes after Isha"],
+    "friday":  ["Friday:"," Opens early for Jummah preparation"],
+    "office_hours":  ["Office Hours:"," Monday - Friday, 9:00 AM - 5:00 PM"]
+  },
+
+  "Admin": {
+    "prayers": "prayers",
+    "jamaaat": "jamaat",
+    "events": "events",
+    "logout": "Logout",
+    "failed_prayer_times": "Failed to fetch prayer times:",
+    "failed_jamaat_times": "Failed to fetch jamaat times:",
+    "failed_event_times": "Failed to fetch events:",
+    "wrong_password":"Wrong Password",
+    "failed_save":"Failed to save data",
+    "prayer_times_saved":"Prayer times saved successfully!",
+    "jamaat_times_saved":"Jamaat times saved successfully!",
+    "events_saved":"Events saved successfully!",
+    "data_saved":"Data imported successfully!",
+    "invalid_json":"Invalid JSON file",
+    "invalid_json_input":"Invalid JSON input",
+    "some_rows_cant_be_inserted": "Some rows can't be inserted due to validation errors: ",
+    "date_required":"Date is required",
+    "enter_valid_date": "Please enter a valid date",
+    "time_only_numbers": "Time can only contain numbers",
+    "delete_entry": "Delete this entry?",
+    "entry_doesnt_exist": "This entry does not exist in Database",
+    "name_required": "Name is required",
+    "jamaat_name_required": "Jamaat name can contain only letters, numbers, and spaces.",
+    "jamaat_cant_empty": "Jamaat time can not be empty and must contain only numbers",
+    "network_error": "Network or JSON error:",
+    "event_requirement": "Event name can contain only letters, numbers, and spaces.",
+    "event_description_requirement": "Event description can contain only letters, numbers, and spaces.",
+    "event_time_requirement": "Event time can contain only letters, numbers, and spaces."
+  },
+
+  "MosqueWebsite": {
+    "menu": "Menu",
+    "open_main_menu": "Open main menu",
+    "home": "home", 
+    "jamaat_times": "jamaat times", 
+    "prayers": "prayers", 
+    "events": "events", 
+    "donate": "donate", 
+    "info": "info", 
+    "contact": "contact"
+  },
+
+  "prayers": {
+    "title": "Prayer Times | Mosque Admin",
+    "tabTitle": "Prayer Times",
+    "description": "View and manage daily prayer and Jamaat times."
+  },
+
+  "events": {
+    "title": "Events | Mosque Admin",
+    "tabTitle": "Events",
+    "description": "Create and manage community events."
+  }
+}
