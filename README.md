@@ -224,15 +224,3 @@ project/mosque-website/src/april.jpg
 docker compose build --no-cache
 docker compose up
 ```
-
----
-
-If you want, I can also:
-
-✅ Add project screenshots
-✅ Add badges (Node version, license, technologies)
-✅ Add folder structure section
-✅ Add API documentation
-✅ Make a professional landing-style README with icons
-
-Just let me know!
