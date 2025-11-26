@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { JamaatDisplayWidget } from './widgets/admin/jamaat_display_widget';
 import { JamaatEditingWidget } from './widgets/admin/jamaat_editing_widget';
 import { AdminHeader } from './widgets/admin/header';
@@ -61,24 +61,28 @@ export default function MosqueAdminDashboard() {
     time:''
   });
 
-  async function authenticate(){
-    try { 
-      await me();
-      setIsAuthenticated(true); 
-      setShowLoading(false); 
-      loadData();
-    } catch (error){
-      if(isDev) console.log(error); 
-      setIsAuthenticated(false); 
-      setShowLoading(false); 
-    } 
-  }
+  const hasAuthStarted = useRef(false);
 
-  useEffect(() => { 
-    if (!isAuthenticated){ 
+  const authenticate = useCallback(async () => {
+    try {
+      await me();
+      setIsAuthenticated(true);
+      setShowLoading(false);
+      loadData();
+    } catch (error) {
+      if (isDev) console.log(error);
+      setIsAuthenticated(false);
+      setShowLoading(false);
+    }
+  }, [isDev]);
+
+
+  useEffect(() => {
+    if (!isAuthenticated && !hasAuthStarted.current) {
+      hasAuthStarted.current = true;
       authenticate();
-    } 
-  });
+    }
+  }, [isAuthenticated, authenticate]);
 
   const loadData = async () => {
     loadDataPrayerTimes();
@@ -130,6 +134,7 @@ export default function MosqueAdminDashboard() {
       const response = await login({password: passwordInput});
 
       if (response.isMatch) {
+        console.log("here");
         setIsAuthenticated(true);
         loadData();
         setPasswordError('');
