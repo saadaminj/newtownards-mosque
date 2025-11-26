@@ -1,95 +1,243 @@
-# newtownards-mosque
+Here is a **fully improved, clean, well-formatted, professional** version of your `README.md`.
+I kept all your technical instructions but rewrote everything for correctness, clarity, and structure.
 
-The is the mosque website in react and node js with sqlite database.
+---
 
-The website has dashboard and admin panel.
+# 🕌 Newtownards Mosque Website
 
-Admin panel has login method, JWT authentication, and origin tracking. it will not accept any request if it is not from origin which is our frontend ip & port.
+A full-stack mosque management system built with **React (Vite)**, **Node.js**, and **SQLite**, including an admin dashboard with authentication and prayer-time management.
 
-if you are first time user. just enter any arbitary string has password. if it will not find password in database. it will generate a password and ask you to use this password in future. The database is storing hash of that password for security 
-reasons.
+---
 
-I am using node version: v24.11.0
+## ✨ Features
 
-How to run frontend :
+* Modern **React + Tailwind CSS** frontend
+* Secure **Node.js + Express** backend
+* Local **SQLite** database (file-based, no external DB required)
+* Admin Panel with:
 
-git clone the project in your local pc
-open cmd inside the project
-cd /mosque-website/
+  * JWT authentication
+  * First-time auto-password generation
+  * Origin protection (only accepts requests from the configured frontend URL)
+* Ability to import prayer times from JSON or AI-generated text
+* Full Docker support (frontend + backend)
+
+---
+
+## 🛠 Tech Stack
+
+| Layer      | Technology                 |
+| ---------- | -------------------------- |
+| Frontend   | React (Vite), Tailwind CSS |
+| Backend    | Node.js v24.11.0, Express  |
+| Database   | SQLite                     |
+| Auth       | JWT                        |
+| Deployment | Docker & Docker Compose    |
+
+---
+
+# 🚀 Running the Frontend
+
+### 1. Clone the project
+
+```bash
+git clone <repository-url>
+cd mosque-website
+```
+
+### 2. Install packages
+
+```bash
 npm install
+```
+
+### 3. Start the dev server
+
+```bash
 npm run dev
+```
 
-the website will run on localhost:5173
+The frontend will run at:
 
-access admin panel on localhost:5173/admin
+```
+http://localhost:5173
+```
 
-to run the server on docker use these commands:
+---
 
-use "docker compose build --no-cache" to build the container without using cache
-use "docker compose up" to run the container
-use "docker compose up -d" to run the container in background
+### 🔐 Access the Admin Panel
 
-use "docker compose down" to stop and remove the container
+```
+http://localhost:5173/admin
+```
 
-How to run database :
+---
 
-to create jwt key use this command in terminal:
+# 🧱 Running the Backend (server-api)
 
-first create .env file inside server-api/ and copy this inside the file:
-"
-JWT_SECRET=<copy you key here>
+### 1. Create `.env` file inside `server-api/`
+
+```
+JWT_SECRET=<your-generated-secret>
 FRONTEND_DEV_ORIGIN=http://localhost:5173
 FRONTEND_PROD_ORIGIN=http://localhost:4173
 DB_FILE=data/app.db
 PORT=5001
-DOMAIN=http//localhost
-"
+DOMAIN=http://localhost
+```
 
+### 2. Generate a JWT secret
+
+```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-then copy the key generated and assign it to JWT_SECRET variable in .env file 
+```
 
-git clone the project in your local pc
-open cmd inside the project
-cd /server-api/
+Copy the generated key into the `JWT_SECRET` variable in `.env`.
+
+### 3. Install backend dependencies
+
+```bash
+cd server-api
 npm install
+```
+
+### 4. Start backend
+
+```bash
 npm start
+```
 
-to run the server on docker use these commands:
+The backend API will run at:
 
-use "docker compose build --no-cache" to build the container without using cache
-use "docker compose up" to run the container
-use "docker compose up -d" to run the container in background
+```
+http://localhost:5001
+```
 
-use "docker compose down" to stop and remove the container
+---
 
+# 🐳 Running via Docker (Frontend & Backend)
 
-the database will run on localhost:5001
+### Build without cache
 
-The mosque website is using tailwind css, having emerald theme. you can change the colors by replacing every emerald work with [slate, gray, zinc, neutral, stone, red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose]. Make sure you search and replace the word in case sensitive manner. or else, it might replace any other string in the site.
+```bash
+docker compose build --no-cache
+```
 
-to run db server:
+### Start containers (foreground)
 
+```bash
+docker compose up
+```
+
+### Start containers (background)
+
+```bash
+docker compose up -d
+```
+
+### Stop and remove containers
+
+```bash
 docker compose down
+```
+
+---
+
+# 🔑 First-Time Login (Admin Panel)
+
+If no password is found in the database:
+
+* Enter **any** string as the password.
+* The system will automatically **generate a secure password**.
+* Use that generated password for all future logins.
+* Only the **hashed** password is stored for security.
+
+---
+
+# 🎨 Tailwind Theme Customization
+
+The project uses the **emerald** color theme.
+
+To change theme colors, replace the word `emerald` with any of:
+
+```
+slate, gray, zinc, neutral, stone,
+red, orange, amber, yellow, lime,
+green, emerald, teal, cyan, sky,
+blue, indigo, violet, purple,
+fuchsia, pink, rose
+```
+
+⚠️ Important:
+Use **case-sensitive search and replace** to avoid breaking other strings.
+
+---
+
+# 📥 Admin – Prayer Time Upload
+
+You can upload prayer times:
+
+### **Option 1 — Import JSON File**
+
+Upload a file matching the format in:
+
+```
+project/server-api/prayerTimes.json
+```
+
+### **Option 2 — Paste JSON Input**
+
+Paste JSON manually into:
+
+```
+localhost:5173/admin → Input → Import JSON Input
+```
+
+---
+
+# 🖼 Generate JSON From a Prayer Times Image (via AI)
+
+1. Upload a prayer-time image to an AI chatbot (ChatGPT, Gemini, etc.)
+2. Use the prompt in:
+
+```
+project/mosque-website/src/prompt.txt
+```
+
+3. Modify the prompt based on your image
+4. Example used image:
+
+```
+project/mosque-website/src/april.jpg
+```
+
+5. Paste AI-generated JSON into the Admin panel
+6. Click **Import JSON Input**
+7. Always click **Save Changes** afterwards
+
+---
+
+# ⚠️ Important Notes
+
+* **Delete** operations directly update the database
+* **Edit** and **Add** operations update the UI only →
+  ✔️ Require pressing **Save Changes** to become permanent
+* Always review changes before saving
+* Docker must be rebuilt after editing backend code:
+
+```bash
 docker compose build --no-cache
 docker compose up
+```
 
-in Admin panel to upload prayer times:
+---
 
-you can either import the json file in the same format as "project/server-api/prayerTimes.json"
-or import json using input.
+If you want, I can also:
 
-to generate json from an image follow these instructions:
+✅ Add project screenshots
+✅ Add badges (Node version, license, technologies)
+✅ Add folder structure section
+✅ Add API documentation
+✅ Make a professional landing-style README with icons
 
-go to any AI chatbot site i.e Chatgpt, Gemini, etc
-
-upload an image where there are prayer times mentioned. 
-
-use the prompt mentioned in "project/mosque-website/src/prompt.txt"
-
-change the prompt as per the image. The image i use is in "project/mosque-website/src/april.jpg"
-
-the response you get from AI, just copy and paste it to "localhost:5173/admin" -> input -> click "import json input"
-
-please make sure to click "Save Changes" any time you make any change to the admin panel.
-
-The delete function is directly linked to databases, edit and add functionality is not directly linked, but you have to click "Save changes" to make the changes permanent
+Just let me know!
