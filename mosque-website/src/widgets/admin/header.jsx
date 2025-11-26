@@ -1,13 +1,15 @@
 
 import { Calendar, Plus, Save, Download, Upload } from 'lucide-react';
+import Strings from '../../utils/admin/Strings.json';
 export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUpload, data, setInputJSON, inputJSON, importInputJSON}) => {
+  const pageStrings = Strings["header"];
   return (
     <div>
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Mosque Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-800">{pageStrings.title}</h1>
             </div>
             {saveData && (<button
               type="button"
@@ -15,7 +17,7 @@ export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUplo
               className="bg-emerald-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
-              Save All Changes
+              {pageStrings.save_changes}
             </button>)}
           </div>
           {importInputJSON &&
@@ -26,7 +28,7 @@ export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUplo
             }}>
             <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4 ">
               <div className='flex flex-wrap gap-2'>
-                <label className=" text-sm font-medium text-gray-700 mb-2">Input JSON Data</label>
+                <label className=" text-sm font-medium text-gray-700 mb-2">{pageStrings.input_json}</label>
                 <input
                   type="text"
                   value={inputJSON}
@@ -39,7 +41,7 @@ export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUplo
                   className="bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-3"
                   >
                     <Save className="w-4 h-4" />
-                    Import JSON input
+                    {pageStrings.import_json_input}
                 </button>)}
               </div>
             </div>
@@ -52,17 +54,17 @@ export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUplo
                 className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add Entry
+                {pageStrings.add_entry}
               </button>)}
             {downloadJSON && (<button
               onClick={downloadJSON}
               className="bg-gray-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-800 flex items-center gap-2">
               <Download className="w-4 h-4" />
-              Export JSON
+              {pageStrings.export_json}
             </button>)}
             {handleFileUpload && (<label className="bg-gray-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-800 flex items-center gap-2 cursor-pointer">
               <Upload className="w-4 h-4" />
-              Import JSON
+              {pageStrings.import_json}
               <input
                 type="file"
                 accept=".json"
@@ -75,7 +77,7 @@ export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUplo
           {data && 
             (<div className="mt-4 p-4 bg-emerald-50 rounded-lg">
               <p className="text-sm text-gray-700">
-                <span className="font-semibold">Total Entries:</span> {Object.keys(data || {}).length} days
+                <span className="font-semibold">{pageStrings.total_entries}</span> {Object.keys(data || {}).length} {pageStrings.days}
               </p>
             </div>)}
           </div>

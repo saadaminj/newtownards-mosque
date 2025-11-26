@@ -1,0 +1,94 @@
+{ 
+    "header": {
+        "title": "Mosque Admin Dashboard",
+        "save_changes": "Save All Changes",
+        "input_json": "Input JSON Data",
+        "import_json_input": "Import JSON input",
+        "add_entry": "Add Entry",
+        "export_json": "Export JSON",
+        "import_json": "Import JSON",
+        "total_entries": "Total Entries: ",
+        "days": " days"
+    },
+    "login": {
+        "title": "Admin Access",
+        "enter_password": "Enter the admin password to continue",
+        "copy_password": "Copy the admin password somewhere save and use it to login",
+        "password": "Password",
+        "copy": "📋 Copy",
+        "unlock_dashboard": "Unlock Dashboard",
+        "go_to_login": "Go to Login"
+    },
+    "events_display": {
+        "title": "Events",
+        "event": "Event",
+        "description": "Description",
+        "time": "Time",
+        "actions": "Actions",
+        "no_entries": "No entries yet. Click 'Add Entry' to get started."
+    },
+    "events_editing": {
+        "add_new_entry": "Add New Entry",
+        "edit_entry": "Edit Entry",
+        "event_name": "Event Name *",
+        "description": "Description",
+        "time": "Time",
+        "actions": "Actions",
+        "cancel": "Cancel",
+        "save_entry": "Save Entry"
+    },
+    "jamaat_display": {
+        "title": "Jamaat Times",
+        "search_name": "Search name",
+        "prayer_time": "Prayer Name",
+        "time": "Time",
+        "actions": "Actions",
+        "no_entries": "No entries yet. Click 'Add Entry' to get started.",
+        "edit": "Edit",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+    },
+    "jamaat_editing": {
+        "add_new_entry": "Add New Entry",
+        "edit_entry": "Edit Entry",
+        "jamaat_name": "Jamaat Name *",
+        "time": "Time",
+        "actions": "Actions",
+        "cancel": "Cancel",
+        "save_entry": "Save Entry"
+    },
+    "prayer_display": {
+        "title": "Prayer Times",
+        "search_date": "Search date (YYYY-MM-DD)",
+        "prayer_time": "Prayer Name",
+        "date": "Date",
+        "fajr": "Fajr",
+        "sunrise": "Sunrise",
+        "dhuhr": "Dhuhr",
+        "asr": "Asr",
+        "maghrib": "Maghrib",
+        "isha": "Isha",
+        "time": "Time",
+        "actions": "Actions",
+        "no_entries": "No entries yet. Click 'Add Entry' or 'Generate Year Template' to get started.",
+        "edit": "Edit",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+    },
+    "prayer_editing": {
+        "add_new_entry": "Add New Entry",
+        "edit_entry": "Edit Entry",
+        "date": "Date *",
+        "prayer_name": "Prayer Name *",
+        "time": "Time",
+        "actions": "Actions",
+        "cancel": "Cancel",
+        "save_entry": "Save Entry",
+        "fajr": "fajr",
+        "sunrise": "sunrise",
+        "dhuhr": "dhuhr",
+        "asr": "asr",
+        "maghrib": "maghrib",
+        "isha": "isha"
+    }
+}

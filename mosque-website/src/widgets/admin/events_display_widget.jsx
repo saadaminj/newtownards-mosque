@@ -1,10 +1,12 @@
 
 import { Search, Edit2, Trash2, Copy } from 'lucide-react';
+import Strings from '../../utils/admin/Strings.json';
 export const EventsDisplayWidget = ({searchEventName, setSearchEventName, filteredTimes, editEntry, duplicateEntry, deleteEntry}) => {
-  return (
+  const pageStrings = Strings["events_display"];
+;  return (
     <div className="bg-white rounded-2xl shadow-xl p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Events</h2>
+        <h2 className="text-2xl font-bold text-gray-800">{pageStrings.title}</h2>
         <div className="flex items-center gap-3">
           <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
           <input
@@ -20,17 +22,17 @@ export const EventsDisplayWidget = ({searchEventName, setSearchEventName, filter
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Event</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Description</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Time</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">{pageStrings.event}</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">{pageStrings.description}</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">{pageStrings.time}</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">{pageStrings.actions}</th>
             </tr>
           </thead>
           <tbody>
             {(!filteredTimes || (filteredTimes?.length === 0)) ? (
               <tr>
                 <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
-                  No entries yet. Click "Add Entry" to get started.
+                  {pageStrings.no_entries}
                 </td>
               </tr>
             ) : (
