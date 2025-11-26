@@ -163,6 +163,8 @@ blue, indigo, violet, purple,
 fuchsia, pink, rose
 ```
 
+To look more into colors visit : **https://tailwindcss.com/docs/colors**
+
 ⚠️ Important:
 Use **case-sensitive search and replace** to avoid breaking other strings.
 
