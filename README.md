@@ -1,8 +1,3 @@
-Here is a **fully improved, clean, well-formatted, professional** version of your `README.md`.
-I kept all your technical instructions but rewrote everything for correctness, clarity, and structure.
-
----
-
 # 🕌 Newtownards Mosque Website
 
 A full-stack mosque management system built with **React (Vite)**, **Node.js**, and **SQLite**, including an admin dashboard with authentication and prayer-time management.
