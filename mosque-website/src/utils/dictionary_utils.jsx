@@ -110,9 +110,7 @@ const defaultTimings = {
 };
 
 export function createPrayerData() {
-    console.log("in prayer data create");
     const prayerData = {};
-
     const year = (new Date()).getFullYear();
 
     for (let index = year - 1; index <= year + 1; index++) {

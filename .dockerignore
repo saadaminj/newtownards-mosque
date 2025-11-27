@@ -1,0 +1,31 @@
+# flyctl launch added from .gitignore
+**\**\node_modules
+# **/.env
+
+# flyctl launch added from mosque-website\.gitignore
+# Logs
+mosque-website\**\logs
+mosque-website\**\*.log
+mosque-website\**\npm-debug.log*
+mosque-website\**\yarn-debug.log*
+mosque-website\**\yarn-error.log*
+mosque-website\**\pnpm-debug.log*
+mosque-website\**\lerna-debug.log*
+
+mosque-website\**\node_modules
+mosque-website\**\dist
+mosque-website\**\dist-ssr
+mosque-website\**\*.local
+
+# Editor directories and files
+mosque-website\**\.vscode\*
+!mosque-website\**\.vscode\extensions.json
+mosque-website\**\.idea
+mosque-website\**\.DS_Store
+mosque-website\**\*.suo
+mosque-website\**\*.ntvs*
+mosque-website\**\*.njsproj
+mosque-website\**\*.sln
+mosque-website\**\*.sw?
+mosque-website\**\.env
+fly.toml

@@ -17,6 +17,8 @@ const app = express();
 const allowedOrigins = [
   process.env.FRONTEND_DEV_ORIGIN,   // e.g. http://localhost:5173
   process.env.FRONTEND_PROD_ORIGIN,  // e.g. https://mosque.example.com
+  "https://mosque-website-long-bird-6230.fly.dev",
+  "mosque-website-long-bird-6230.fly.dev",
 ].filter(Boolean); // remove undefined/empty
 
 

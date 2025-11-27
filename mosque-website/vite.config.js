@@ -1,17 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import basicSsl from '@vitejs/plugin-basic-ssl'
-// import fs from 'fs';
-// import path from 'path';
 
 export default defineConfig({
-  plugins: [react(), basicSsl()],
+  plugins: [react()],
+
   server: {
-    // https: {
-    //   key: fs.readFileSync(path.resolve(import.meta.env?.DIRNAME || "/", 'certs/localhost-key.pem')),
-    //   cert: fs.readFileSync(path.resolve(import.meta.env?.DIRNAME || "/", 'certs/localhost-cert.pem')),
-    // },        // enable HTTPS
     https: false,
-    port: Number(import.meta.env?.PORT) || 5173,
+    host: '0.0.0.0',
+    port: 4173,
   },
-});
+
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    allowedHosts: [
+      'mosque-website-long-bird-6230.fly.dev',
+      'localhost',
+      '127.0.0.1',
+    ],
+  },
+})
