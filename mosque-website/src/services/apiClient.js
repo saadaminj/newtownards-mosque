@@ -3,8 +3,10 @@
 import { isDev } from "../env";
 
 const API_BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) ||
-  "";
+  (typeof import.meta !== "undefined" &&
+    (isDev
+      ? import.meta.env.VITE_API_BASE_URL_DEV
+      : import.meta.env.VITE_API_BASE_URL_PROD));
 
 // Generic helper for GET requests
 export async function apiGet(path) {

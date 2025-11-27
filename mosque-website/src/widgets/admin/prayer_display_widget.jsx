@@ -5,16 +5,19 @@ export const PrayerDisplayWidget = ({searchDate, setSearchDate, filteredTimes, e
   const pageStrings = Strings["prayer_display"];
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">{pageStrings.title}</h2>
-          <div className="flex items-center gap-3">
-            <Search className="w-5 h-5 text-gray-400 absolute ml-3" />
+        <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+          <h2 className="text-2xl font-bold text-gray-800">
+            {pageStrings.title}
+          </h2>
+
+          <div className="relative w-full md:w-auto">
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder={pageStrings.search_date}
               value={searchDate}
               onChange={(e) => setSearchDate(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         </div>

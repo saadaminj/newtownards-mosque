@@ -34,6 +34,8 @@ export default function MosqueAdminDashboard() {
   const [prayerFormErrors, setPrayerFormErrors] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showLoading, setShowLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const [editFormPrayers, setEditFormPrayers] = useState({
     date: '',
     fajr: '',
@@ -586,30 +588,52 @@ export default function MosqueAdminDashboard() {
       );
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-8">
-      <nav className="max-w-7xl mx-auto bg-white shadow-md sticky top-0 z-10 mb-4 rounded-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-8 ">
+      <nav className="bg-white shadow-md sticky top-0 z-10 bg-white rounded-2xl shadow-xl mb-2">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex-1 flex justify-center space-x-2 flex-wrap">
-              {[pageStrings.prayers, pageStrings.jamaat, pageStrings.events].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    activeTab === tab
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-emerald-100'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center justify-between py-3 md:hidden">
+            <span className="font-semibold text-emerald-700">
+              {pageStrings.Menu}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(prev => !prev)}
+              className="inline-flex items-center justify-center p-2 rounded-md border border-emerald-600 text-emerald-700">
+              <span className="sr-only">{pageStrings.OpenMainMenu}</span>
+              <div className="space-y-1">
+                <span className="block h-0.5 w-5 bg-emerald-700"></span>
+                <span className="block h-0.5 w-5 bg-emerald-700"></span>
+                <span className="block h-0.5 w-5 bg-emerald-700"></span>
+              </div>
+            </button>
+          </div>
+
+          <div
+            className={`
+              flex flex-col space-y-2 pb-3
+              ${isMobileMenuOpen ? "flex" : "hidden"}
+              md:flex md:flex-row md:space-y-0 md:space-x-2 md:justify-center md:py-4
+            `}>
+            {[pageStrings.prayers, pageStrings.jamaat, pageStrings.events].map(tab => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setIsMobileMenuOpen(false); // close menu on select (mobile)
+                }}
+                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                  activeTab === tab
+                    ? "bg-emerald-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-emerald-100"
+                }`}>
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
 
             <button
               onClick={handleLogout}
               className="ml-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition-all"
-            >
+              >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-5 h-5"
@@ -627,8 +651,12 @@ export default function MosqueAdminDashboard() {
               <span>{pageStrings.logout}</span>
             </button>
           </div>
+          
         </div>
       </nav>
+
+
+            
 
       {activeTab === pageStrings.prayers && (
         <div className="max-w-7xl mx-auto">
