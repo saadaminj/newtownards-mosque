@@ -3,8 +3,8 @@ version: "3.8"
 services:
   server-api:
     build:
-      context: ./server-api          # use server-api folder as build context
-      dockerfile: ../Dockerfile # shared Dockerfile in parent
+      context: ./server-api          # 👈 this folder contains package.json
+      dockerfile: ../Dockerfile.node # 👈 use the shared Dockerfile
     container_name: mosque-server-api
     restart: unless-stopped
     ports:
@@ -14,14 +14,14 @@ services:
       PORT: 5001
       DOMAIN: http://localhost
     volumes:
-      - ./server-api/data:/data            # host -> container
+      - ./server-api/data:/data
     env_file:
       - ./server-api/.env
 
   mosque-website:
     build:
-      context: ./mosque-website      # use mosque-website folder as build context
-      dockerfile: ../Dockerfile # same shared Dockerfile
+      context: ./mosque-website      # 👈 this folder contains package.json
+      dockerfile: ../Dockerfile.node
     container_name: mosque-website
     restart: unless-stopped
     ports:
@@ -31,6 +31,6 @@ services:
       PORT: 5173
       DOMAIN: http://localhost
     volumes:
-      - ./mosque-website/data:/data        # host -> container
+      - ./mosque-website/data:/data
     env_file:
       - ./mosque-website/.env
