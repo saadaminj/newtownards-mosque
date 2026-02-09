@@ -8,7 +8,8 @@
         "export_json": "Export JSON",
         "import_json": "Import JSON",
         "total_entries": "Total Entries: ",
-        "days": " days"
+        "days": " days",
+        "copy_prompt": "Copy Prompt"
     },
     "login": {
         "title": "Admin Access",

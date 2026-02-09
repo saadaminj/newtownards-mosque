@@ -136,7 +136,9 @@
     "network_error": "Network or JSON error:",
     "event_requirement": "Event name can contain only letters, numbers, and spaces.",
     "event_description_requirement": "Event description can contain only letters, numbers, and spaces.",
-    "event_time_requirement": "Event time can contain only letters, numbers, and spaces."
+    "event_time_requirement": "Event time can contain only letters, numbers, and spaces.",
+    "copy_prompt_successful": "Copied prompt to clipboard!",
+    "copy_prompt_failed": "Failed to Copy prompt to clipboard"
   },
 
   "MosqueWebsite": {

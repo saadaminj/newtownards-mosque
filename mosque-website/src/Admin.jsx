@@ -12,7 +12,8 @@ import { deleteJamaat, fetchJamaatTimes, saveJamaatTimes } from './services/jama
 import { deleteEvent, fetchEvents, saveEvents } from './services/eventService';
 import { login, logout, me } from './services/passwordService';
 import { isDev } from './env';
-import Strings from './utils/Strings.json';
+import Strings from './utils/Strings.json';import { PRAYER_TIMES_PROMPT } from './utils/admin/prayerTimePrompt';
+;
 
 export default function MosqueAdminDashboard() {
   const pageStrings = Strings["Admin"];
@@ -151,6 +152,17 @@ export default function MosqueAdminDashboard() {
       alert(error);
     }
   }
+
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(PRAYER_TIMES_PROMPT);
+
+      alert(pageStrings.copy_prompt_successful);
+    } catch (error) {
+      if(isDev) console.log(error);
+      alert(pageStrings.copy_prompt_failed);
+    }
+  };
     
 
   const saveData = async () => {
@@ -670,6 +682,7 @@ export default function MosqueAdminDashboard() {
           inputJSON={inputJSON}
           importInputJSON={importInputJSON}
           setInputJSON={setInputJSON}
+          copyPromptText={copyPrompt}
         />
 
         {prayerEditingIndex !== null && (

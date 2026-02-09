@@ -1,0 +1,63 @@
+export const PRAYER_TIMES_PROMPT = `This is a prayer times table from a mosque. The table shows prayer times with columns for different prayers (Fajr, Shrq/Sunrise, Dhuhr, Asr, Mgrb/Maghrib, Isha) and rows for each day of the month.
+Extract ALL prayer times from this image and return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+{
+  "2024-04-01":
+    {
+      "fajr": "05:16",
+      "sunrise": "06:54",
+      "dhuhr": "13:29",
+      "asr": "17:00",
+      "maghrib": "20:02",
+      "isha": "21:34"
+    },
+
+  "2024-04-02":
+    {
+      "fajr": "05:16",
+      "sunrise": "06:54",
+      "dhuhr": "13:29",
+      "asr": "17:00",
+      "maghrib": "20:02",
+      "isha": "21:34"
+    },
+}
+
+CRITICAL INSTRUCTIONS:
+- The image has month name for e.g April, May, June convert it to number
+- 1 2 3 4 are days so convert month and days in keys such as YYYY-MM-DD 2025-04-01 (if april)
+- the image has prayer times, parse the text and put it into dictionary in this format: 
+{
+  "2024-04-01":
+    {
+      "fajr": "05:16",
+      "sunrise": "06:54",
+      "dhuhr": "13:29",
+      "asr": "17:00",
+      "maghrib": "20:02",
+      "isha": "21:34"
+    },
+
+  "2024-04-02":
+    {
+      "fajr": "05:16",
+      "sunrise": "06:54",
+      "dhuhr": "13:29",
+      "asr": "17:00",
+      "maghrib": "20:02",
+      "isha": "21:34"
+    },
+}
+- Each day prayer time is seperate and the dictionary should have 8, 30 or 31 days in it. Please extract times for whole month and put it in json object like you are told.
+- The image shows times in 12-hour format (e.g., 5.16 means 5:16 AM, 1.29 means 1:29 PM)
+- Times before noon (Fajr, Sunrise) are AM times
+- Times after noon (Dhuhr, Asr, Maghrib, Isha) are PM times
+- Convert ALL times to 24-hour format with colon separator (HH:MM)
+- Fajr and Sunrise: Keep as morning times (e.g., 5.16 → 05:16)
+- Dhuhr: Add 12 hours if needed (e.g., 1.29 → 13:29)
+- Asr: Add 12 hours (e.g., 5.00 → 17:00)
+- Maghrib: Add 12 hours (e.g., 8.02 → 20:02)
+- Isha: Add 12 hours (e.g., 9.34 → 21:34)
+- If time is already after 12, keep it
+- Date format: YYYY-MM-DD
+- Extract ALL days visible in the table
+- Return ONLY the JSON object, no other text`;

@@ -1,7 +1,7 @@
 
-import { Calendar, Plus, Save, Download, Upload } from 'lucide-react';
+import { Calendar, Plus, Save, Download, Upload, Copy } from 'lucide-react';
 import Strings from '../../utils/admin/Strings.json';
-export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUpload, data, setInputJSON, inputJSON, importInputJSON}) => {
+export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUpload, data, setInputJSON, inputJSON, importInputJSON, copyPromptText}) => {
   const pageStrings = Strings["header"];
   return (
     <div>
@@ -47,6 +47,13 @@ export const AdminHeader = ({saveData, addNewEntry, downloadJSON, handleFileUplo
                 >
                   <Save className="w-4 h-4" />
                   {pageStrings.import_json_input}
+              </button>)}
+              {copyPromptText && (<button
+                type="button"
+                onClick={copyPromptText}
+                className="bg-gray-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-800 flex items-center gap-2">
+                  <Copy className="w-4 h-4" />
+                  {pageStrings.copy_prompt}
               </button>)}
             </div>
           </div>
