@@ -123,8 +123,11 @@ cd mosque-website
 ```
 
 To run both (frontend, database) server together. Stay in the project root directory and run the following command.
+1. Create Shared network so that react js server can access database server.
+2. Build and run docker containers for both servers.
 
 ```bash
+docker network create my-shared-network 
 docker compose up -d
 ```
 
