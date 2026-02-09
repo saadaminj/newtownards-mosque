@@ -58,4 +58,5 @@ app.get('/api/prayer_times', fetchPrayers);
 app.post("/api/prayer_times", authenticate, savePrayers);
 app.delete("/api/prayer_times/:date", authenticate, deletePrayer);
 
-app.listen(process.env.PORT, () => console.log('API on '+process.env.DOMAIN+":"+process.env.PORT));
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log('API on '+process.env.DOMAIN+":"+process.env.PORT));

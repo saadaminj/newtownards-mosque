@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  server-api:
+    build: ./server-api
+    container_name: server-api
+    ports:
+      - "5001:5001"
+    networks:
+      - app-network
+
+  mosque-website:
+    build: ./mosque-website
+    container_name: mosque-website
+    ports:
+      - "4173:4173"
+    depends_on:
+      - server-api
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
