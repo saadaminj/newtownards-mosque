@@ -112,6 +112,24 @@ http://localhost:5001
 
 # 🐳 Running via Docker (Frontend & Backend)
 
+go to project folder then go to server-api or mosque-website to run individual containers.
+
+```bash
+cd server-api
+```
+
+```bash
+cd mosque-website
+```
+
+To run both (frontend, database) server together. Stay in the project root directory and run the following command.
+
+```bash
+docker compose up -d
+```
+
+-d flag will run docker container in the background.
+
 ### Build without cache
 
 ```bash

@@ -25,8 +25,8 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow non-browser or same-origin requests with no origin (like curl, Postman)
-      if (!origin) return callback(null, true);
+      // Don't allow non-browser or same-origin requests with no origin (like curl, Postman)
+      if (!origin) return callback(new Error("Not allowed by CORS"));
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
