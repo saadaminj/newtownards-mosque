@@ -12,8 +12,8 @@ import { deleteJamaat, fetchJamaatTimes, saveJamaatTimes } from './services/jama
 import { deleteEvent, fetchEvents, saveEvents } from './services/eventService';
 import { login, logout, me } from './services/passwordService';
 import { isDev } from './env';
-import Strings from './utils/Strings.json';import { PRAYER_TIMES_PROMPT } from './utils/admin/prayerTimePrompt';
-;
+import Strings from './utils/Strings.json';
+import { PRAYER_TIMES_PROMPT } from './utils/admin/prayerTimePrompt';
 
 export default function MosqueAdminDashboard() {
   const pageStrings = Strings["Admin"];
@@ -137,7 +137,6 @@ export default function MosqueAdminDashboard() {
       const response = await login({password: passwordInput});
 
       if (response.isMatch) {
-        console.log("here");
         setIsAuthenticated(true);
         loadData();
         setPasswordError('');
